@@ -1,26 +1,70 @@
 @import "tailwindcss";
 
+/* Committed to one visual world (light), the way the sites this draws from
+   do — not an oversight. */
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #0b0b0c;
+  --ink: #0b0b0c;
+  --muted: #6b6b6f;
+  --line: #e7e7e4;
+  --surface: #ffffff;
+  --panel: #eaeaea;
+  --panel-line: #dadad8;
+  --accent: #e4f222;
+  --accent-ink: #0b0b0c;
+  --accent-soft: #f4fbc8;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-surface: var(--surface);
+  --color-panel: var(--panel);
+  --color-panel-line: var(--panel-line);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --font-sans: var(--font-saans);
+  --font-mono: var(--font-saans-mono);
+  --font-heading: var(--font-pp-neue-montreal);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  background: var(--background);
+  scroll-behavior: smooth;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--ink);
+}
+
+/* Ramp-style dotted grid: small dots on the muted panel backgrounds that
+   sit behind product mockups and bento cards. */
+.bg-dot-grid {
+  background-color: var(--panel);
+  background-image: radial-gradient(circle, rgba(11, 11, 12, 0.14) 1px, transparent 1px);
+  background-size: 16px 16px;
+  background-position: -7px -7px;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+.bg-dot-grid-dark {
+  background-color: var(--ink);
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.14) 1px, transparent 1px);
+  background-size: 16px 16px;
+  background-position: -7px -7px;
 }
