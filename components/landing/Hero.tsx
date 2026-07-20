@@ -20,7 +20,7 @@ export function Hero() {
             Any API. Every AI agent. One gateway.
           </h1>
 
-          <p className="mt-6 max-w-xl text-pretty text-[17px] leading-relaxed">
+          <p data-hero-copy className="mt-6 max-w-xl text-pretty text-[17px] leading-relaxed">
             <span className="font-medium text-ink">
               Wire turns any REST API into real MCP tools — automatically.
             </span>{" "}
