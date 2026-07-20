@@ -2,7 +2,7 @@ import type { z } from "zod";
 
 // The gateway's job: turn raw API input (an OpenAPI spec, a curl command, a
 // plain-English description) into this — a compiled, executable operation
-// list. lib/mcp/server.ts and lib/anthropic/agent.ts are consumers on top;
+// list. lib/mcp/server.ts and lib/gemini/agent.ts are consumers on top;
 // neither knows or cares whether a GatewayTool came from here or was
 // hand-curated like lib/monnify/tools.ts.
 

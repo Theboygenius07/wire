@@ -1,13 +1,15 @@
-// Monnify API client. Endpoint paths/fields verified against Monnify's own
-// Confluence docs (teamapt.atlassian.net/wiki/spaces/MON) as of 2026-07-20.
-// Double-check against https://developers.monnify.com/api before demo day —
-// Monnify has been known to tweak field names between doc revisions.
+// Monnify API client. getWalletBalance verified directly against
+// developers.monnify.com (GET /api/v2/disbursements/wallet-balance,
+// ?accountNumber=, Bearer auth) as of 2026-07-21 — a prior version of this
+// file had it as v1 with ?walletId= and Basic auth, which 404s. The other
+// five operations are still unverified against live docs; double-check
+// before demo day.
 
 const BASE_URL = process.env.MONNIFY_BASE_URL ?? "https://sandbox.monnify.com";
 const API_KEY = process.env.MONNIFY_API_KEY;
 const SECRET_KEY = process.env.MONNIFY_SECRET_KEY;
 export const CONTRACT_CODE = process.env.MONNIFY_CONTRACT_CODE;
-const WALLET_ID = process.env.MONNIFY_WALLET_ID;
+const WALLET_ACCOUNT_NUMBER = process.env.MONNIFY_WALLET_ACCOUNT_NUMBER;
 
 let cachedToken: { accessToken: string; expiresAt: number } | null = null;
 
@@ -91,10 +93,10 @@ export function verifyTransaction(input: { transactionReference: string }) {
   return monnifyFetch(`/api/v2/transactions/${encodeURIComponent(input.transactionReference)}`);
 }
 
-export function getWalletBalance(input: { walletId?: string } = {}) {
-  const walletId = input.walletId ?? WALLET_ID;
-  if (!walletId) throw new Error("No walletId provided and MONNIFY_WALLET_ID is not set");
-  return monnifyFetch(`/api/v1/disbursements/wallet-balance?walletId=${encodeURIComponent(walletId)}`, { auth: "basic" });
+export function getWalletBalance(input: { accountNumber?: string } = {}) {
+  const accountNumber = input.accountNumber ?? WALLET_ACCOUNT_NUMBER;
+  if (!accountNumber) throw new Error("No accountNumber provided and MONNIFY_WALLET_ACCOUNT_NUMBER is not set");
+  return monnifyFetch(`/api/v2/disbursements/wallet-balance?accountNumber=${encodeURIComponent(accountNumber)}`);
 }
 
 export function initiateRefund(input: {

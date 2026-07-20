@@ -1,9 +1,9 @@
-import { runAgent, type TraceStep } from "@/lib/anthropic/agent";
+import { runAgent, type TraceStep } from "@/lib/gemini/agent";
 import { monnifyGatewayTools } from "@/lib/monnify/tools";
 import { compileSpec, getGateway } from "@/lib/gateway";
 
 // Playground "live test chat" backend. Streams SSE events (reasoning, tool_call,
-// tool_result, error, done) as the Claude tool-use loop in lib/anthropic/agent.ts
+// tool_result, error, done) as the Gemini tool-use loop in lib/gemini/agent.ts
 // progresses — bound to either the Monnify preset or a gateway generated from a
 // pasted API, selected by gatewayId.
 

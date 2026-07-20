@@ -4,7 +4,7 @@ import type { GatewayTool } from "../gateway/types";
 
 // Single source of truth for "Monnify as MCP tools". Both the real MCP server
 // (lib/mcp/server.ts, for Claude Desktop / Cursor) and the in-app Playground /
-// FlowPay orchestrator (which talk to Claude directly) register tools from
+// FlowPay orchestrator (which talk to Gemini directly) register tools from
 // this list, so there's exactly one place that defines what an agent can do.
 
 export const monnifyTools = [
@@ -46,7 +46,7 @@ export const monnifyTools = [
     name: "get_wallet_balance",
     description: "Get the available balance of the merchant's Monnify wallet.",
     schema: {
-      walletId: z.string().optional().describe("Defaults to MONNIFY_WALLET_ID if omitted"),
+      accountNumber: z.string().optional().describe("Defaults to MONNIFY_WALLET_ACCOUNT_NUMBER if omitted"),
     },
     handler: monnify.getWalletBalance,
   },
@@ -76,6 +76,6 @@ export const monnifyTools = [
 export type MonnifyToolName = (typeof monnifyTools)[number]["name"];
 
 // The same six tools, widened to the generic shape lib/mcp/server.ts and
-// lib/anthropic/agent.ts consume — every consumer of "an agent's tool list"
+// lib/gemini/agent.ts consume — every consumer of "an agent's tool list"
 // takes GatewayTool[], whether the tools came from here or from a pasted API.
 export const monnifyGatewayTools = monnifyTools as unknown as GatewayTool[];

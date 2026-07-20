@@ -3,7 +3,7 @@ import type { GatewayOperation, GatewaySpec, GatewayTool } from "./types";
 
 // Turns a GatewaySpec's operations into the exact GatewayTool shape
 // lib/monnify/tools.ts hand-writes — a typed Zod schema plus a real fetch-backed
-// handler. This is what lib/mcp/server.ts registers and lib/anthropic/agent.ts
+// handler. This is what lib/mcp/server.ts registers and lib/gemini/agent.ts
 // calls; neither knows or cares whether a tool came from here or was hand-curated.
 
 function zodForParam(param: GatewayOperation["params"][number]) {

@@ -1,7 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ProductHeader } from "@/components/product/ProductHeader";
+
+type FlowPayPage = { slug: string; title: string; checkoutUrl: string; dashboardUrl: string };
+
+const FLOWPAY_HISTORY_KEY = "wire.flowpayHistory";
 
 type Operation = {
   name: string;
@@ -97,9 +101,22 @@ export default function PlaygroundPage() {
   const [chatLoading, setChatLoading] = useState(false);
 
   const [flowpayPrompt, setFlowpayPrompt] = useState("");
-  const [flowpayResult, setFlowpayResult] = useState<{ slug: string; checkoutUrl: string; dashboardUrl: string } | null>(null);
+  const [flowpayPages, setFlowpayPages] = useState<FlowPayPage[]>([]);
   const [flowpayError, setFlowpayError] = useState<string | null>(null);
   const [flowpayLoading, setFlowpayLoading] = useState(false);
+
+  // Every FlowPay page created this browser keeps showing up here — checkout/
+  // dashboard links open in a new tab specifically so navigating to one
+  // doesn't unmount this page and lose this list (or the gateway/chat state
+  // above it).
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(FLOWPAY_HISTORY_KEY);
+      if (raw) setFlowpayPages(JSON.parse(raw));
+    } catch {
+      // Corrupt/unavailable localStorage — start with an empty history.
+    }
+  }, []);
 
   async function handleGenerateGateway() {
     setGatewayLoading(true);
@@ -153,7 +170,6 @@ export default function PlaygroundPage() {
     if (!flowpayPrompt.trim()) return;
     setFlowpayLoading(true);
     setFlowpayError(null);
-    setFlowpayResult(null);
     try {
       const res = await fetch("/api/flowpay", {
         method: "POST",
@@ -162,7 +178,18 @@ export default function PlaygroundPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed to create the payment page.");
-      setFlowpayResult(data);
+      const page: FlowPayPage = {
+        slug: data.slug,
+        title: data.record?.title ?? data.slug,
+        checkoutUrl: data.checkoutUrl,
+        dashboardUrl: data.dashboardUrl,
+      };
+      setFlowpayPages((pages) => {
+        const next = [page, ...pages];
+        localStorage.setItem(FLOWPAY_HISTORY_KEY, JSON.stringify(next));
+        return next;
+      });
+      setFlowpayPrompt("");
     } catch (err) {
       setFlowpayError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -371,24 +398,35 @@ export default function PlaygroundPage() {
 
             {flowpayError && <p className="mt-4 text-[13px] text-ink/70">{flowpayError}</p>}
 
-            {flowpayResult && (
-              <div className="mt-5 flex flex-wrap items-center gap-3 rounded-xl border border-line bg-white p-4">
-                <span className="h-1.5 w-1.5 rounded-full bg-accent" />
-                <p className="text-[13.5px] text-ink">Done — live checkout and dashboard are ready.</p>
-                <div className="ml-auto flex gap-3">
-                  <a
-                    href={flowpayResult.checkoutUrl}
-                    className="text-[13.5px] font-medium text-ink underline decoration-ink/25 underline-offset-4 hover:decoration-ink"
+            {flowpayPages.length > 0 && (
+              <div className="mt-5 space-y-2">
+                {flowpayPages.map((page) => (
+                  <div
+                    key={page.slug}
+                    className="flex flex-wrap items-center gap-3 rounded-xl border border-line bg-white p-4"
                   >
-                    Checkout
-                  </a>
-                  <a
-                    href={flowpayResult.dashboardUrl}
-                    className="text-[13.5px] font-medium text-ink underline decoration-ink/25 underline-offset-4 hover:decoration-ink"
-                  >
-                    Dashboard
-                  </a>
-                </div>
+                    <span className="h-1.5 w-1.5 rounded-full bg-accent" />
+                    <p className="text-[13.5px] text-ink">{page.title}</p>
+                    <div className="ml-auto flex gap-3">
+                      <a
+                        href={page.checkoutUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[13.5px] font-medium text-ink underline decoration-ink/25 underline-offset-4 hover:decoration-ink"
+                      >
+                        Checkout
+                      </a>
+                      <a
+                        href={page.dashboardUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[13.5px] font-medium text-ink underline decoration-ink/25 underline-offset-4 hover:decoration-ink"
+                      >
+                        Dashboard
+                      </a>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>

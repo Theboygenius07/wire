@@ -11,7 +11,7 @@ const { chromium } = require('playwright');
   // hover over a logo bar cell
   await page.evaluate(() => window.scrollTo(0, 850));
   await page.waitForTimeout(300);
-  const box = await page.locator('text=Claude').first().boundingBox();
+  const box = await page.locator('text=Gemini').first().boundingBox();
   if (box) {
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 10 });
     await page.waitForTimeout(500);

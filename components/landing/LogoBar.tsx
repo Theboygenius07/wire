@@ -1,4 +1,4 @@
-const stack = ["Monnify", "Claude", "MCP", "Next.js", "Vercel"];
+const stack = ["Monnify", "Gemini", "MCP", "Next.js", "Vercel"];
 
 export function LogoBar() {
   return (

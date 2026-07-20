@@ -1,4 +1,4 @@
-import { runAgent } from "@/lib/anthropic/agent";
+import { runAgent } from "@/lib/gemini/agent";
 import { monnifyGatewayTools } from "@/lib/monnify/tools";
 import { saveFlowPay, type FlowPayRecord } from "@/lib/store/flowpay";
 
@@ -9,15 +9,22 @@ import { saveFlowPay, type FlowPayRecord } from "@/lib/store/flowpay";
 
 export const runtime = "nodejs";
 
-const SYSTEM_PROMPT = `You are FlowPay, an agent that turns one plain-English sales request into a live Monnify payment page.
+// Monnify's sandbox rejects create_reserved_account with "cannot reserve more
+// than 1 account(s) for a customer" if the same customerEmail is reused, so
+// the reference/email must be unique per call — generated here, not invented
+// by the model, since an LLM is not a reliable source of uniqueness.
+function buildSystemPrompt(reference: string): string {
+  const email = `flowpay+${reference}@wire.dev`;
+  return `You are FlowPay, an agent that turns one plain-English sales request into a live Monnify payment page.
 
 Given the user's request:
 1. Extract a short title, the price in NGN, and the sales cap (if the user doesn't give a cap, use 100).
-2. Invent a short lowercase slug-like reference from the title (letters, numbers, hyphens only) and call create_reserved_account with accountReference = that reference, accountName = the title, customerEmail = "flowpay@wire.dev", customerName = the title.
-3. Call create_invoice with invoiceReference = the same reference, description = the title, amount = the price, customerEmail = "flowpay@wire.dev", customerName = the title, expiryDate 30 days from now formatted "yyyy-MM-dd HH:mm:ss".
+2. Call create_reserved_account with accountReference = "${reference}", accountName = the title, customerEmail = "${email}", customerName = the title.
+3. Call create_invoice with invoiceReference = "${reference}", description = the title, amount = the price, customerEmail = "${email}", customerName = the title, expiryDate 30 days from now formatted "yyyy-MM-dd HH:mm:ss".
 4. Once both calls succeed, respond with ONLY a JSON object — no prose, no markdown code fences — with exactly these keys:
 {"title": string, "priceNaira": number, "ticketCap": number, "accountReference": string, "accountNumber": string or null, "bankName": string or null, "checkoutUrl": string or null}
 Use null for any field a tool response didn't include.`;
+}
 
 function extractJson(text: string): Record<string, unknown> {
   const stripped = text.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "").trim();
@@ -39,7 +46,8 @@ export async function POST(request: Request) {
     return Response.json({ error: 'Missing "prompt".' }, { status: 400 });
   }
 
-  const trace = await runAgent(SYSTEM_PROMPT, body.prompt, monnifyGatewayTools, 6);
+  const slug = randomSlug();
+  const trace = await runAgent(buildSystemPrompt(slug), body.prompt, monnifyGatewayTools, 6);
   const lastText = [...trace].reverse().find((step) => step.type === "text");
 
   if (!lastText) {
@@ -53,7 +61,6 @@ export async function POST(request: Request) {
     return Response.json({ error: "The agent's final answer wasn't valid JSON.", raw: lastText.text }, { status: 502 });
   }
 
-  const slug = randomSlug();
   const record: FlowPayRecord = {
     slug,
     title: String(parsed.title ?? "Untitled sale"),
