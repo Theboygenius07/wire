@@ -1,5 +1,6 @@
 import { z } from "zod";
 import * as monnify from "./client";
+import type { GatewayTool } from "../gateway/types";
 
 // Single source of truth for "Monnify as MCP tools". Both the real MCP server
 // (lib/mcp/server.ts, for Claude Desktop / Cursor) and the in-app Playground /
@@ -73,3 +74,8 @@ export const monnifyTools = [
 ] as const;
 
 export type MonnifyToolName = (typeof monnifyTools)[number]["name"];
+
+// The same six tools, widened to the generic shape lib/mcp/server.ts and
+// lib/anthropic/agent.ts consume — every consumer of "an agent's tool list"
+// takes GatewayTool[], whether the tools came from here or from a pasted API.
+export const monnifyGatewayTools = monnifyTools as unknown as GatewayTool[];

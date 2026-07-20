@@ -89,7 +89,7 @@ export function Features() {
             </div>
           </div>
         </div>
-      </SpotlightCard>
+      </ParticleHoverCard>
     </section>
   );
 }
