@@ -1,4 +1,4 @@
-import { ParticleHoverCard } from "./ParticleHoverCard";
+import { RepelDotGrid } from "./RepelDotGrid";
 
 const features = [
   {
@@ -31,35 +31,39 @@ export function Features() {
 
       <div className="grid gap-5 sm:grid-cols-2">
         {features.map((f) => (
-          <ParticleHoverCard
+          <div
             key={f.tag}
-            className="group flex flex-col gap-5 overflow-hidden rounded-2xl border border-panel-line bg-dot-grid p-8 transition-colors duration-200 hover:border-ink/20"
+            className="group relative z-0 overflow-hidden rounded-2xl border border-panel-line bg-panel p-8 transition-colors duration-200 hover:border-ink/20"
           >
-            <div className="flex items-start justify-between">
-              <span className="text-[11px] font-semibold tracking-[0.1em] text-muted">
-                {f.tag}
-              </span>
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-line bg-white text-ink transition-transform duration-200 group-hover:rotate-45">
-                &rarr;
-              </span>
+            <RepelDotGrid />
+            <div className="relative z-10 flex h-full flex-col gap-5">
+              <div className="flex items-start justify-between">
+                <span className="text-[11px] font-semibold tracking-[0.1em] text-muted">
+                  {f.tag}
+                </span>
+                <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-line bg-white text-ink transition-transform duration-200 group-hover:rotate-45">
+                  &rarr;
+                </span>
+              </div>
+
+              <h3 className="font-heading text-[22px] font-medium leading-snug tracking-tight">
+                <span className="text-ink">{f.title}</span>{" "}
+                <span className="text-ink/40">{f.titleMuted}</span>
+              </h3>
+
+              <p className="max-w-md text-[14.5px] leading-relaxed text-muted">{f.body}</p>
+
+              <div className="mt-auto inline-flex w-fit items-center gap-2 rounded-lg border border-line bg-white px-3 py-2 font-mono text-[11.5px] text-ink">
+                {f.chip}
+              </div>
             </div>
-
-            <h3 className="font-heading text-[22px] font-medium leading-snug tracking-tight">
-              <span className="text-ink">{f.title}</span>{" "}
-              <span className="text-ink/40">{f.titleMuted}</span>
-            </h3>
-
-            <p className="max-w-md text-[14.5px] leading-relaxed text-muted">{f.body}</p>
-
-            <div className="mt-auto inline-flex w-fit items-center gap-2 rounded-lg border border-line bg-white px-3 py-2 font-mono text-[11.5px] text-ink">
-              {f.chip}
-            </div>
-          </ParticleHoverCard>
+          </div>
         ))}
       </div>
 
-      <ParticleHoverCard className="mt-5 overflow-hidden rounded-2xl border border-panel-line bg-dot-grid p-8 transition-colors duration-200 hover:border-ink/20 sm:p-10">
-        <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+      <div className="relative z-0 mt-5 overflow-hidden rounded-2xl border border-panel-line bg-panel p-8 transition-colors duration-200 hover:border-ink/20 sm:p-10">
+        <RepelDotGrid />
+        <div className="relative z-10 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="max-w-xl">
             <span className="text-[11px] font-semibold tracking-[0.1em] text-muted">FLOWPAY</span>
             <h3 className="font-heading mt-3 text-[22px] font-medium leading-snug tracking-tight text-ink">
@@ -89,7 +93,7 @@ export function Features() {
             </div>
           </div>
         </div>
-      </ParticleHoverCard>
+      </div>
     </section>
   );
 }

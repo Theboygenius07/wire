@@ -2,22 +2,19 @@
 
 import { useEffect, useRef } from "react";
 
-const SPACING = 15;
+const SPACING = 16;
 const RADIUS = 1;
-const ALPHA_MIN = 0.05;
-const ALPHA_MAX = 0.28;
+const ALPHA_MIN = 0.1;
+const ALPHA_MAX = 0.22;
 
-const HOVER_RADIUS = 160;
-const HOVER_ALPHA_MAX = 0.85;
-const HOVER_RADIUS_BOOST = 1.6;
-const EASE = 0.12;
+// Dots push away from the cursor and spring back to their grid position
+// once it moves on — a "repel" field rather than the Hero's glow-on-hover.
+const REPEL_RADIUS = 130;
+const REPEL_STRENGTH = 60;
+const EASE = 0.14;
+const MOUSE_EASE = 0.18;
 
-// Dots sitting directly behind the headline/copy block are dimmed for
-// legibility, fading back to full strength over this margin.
-const COPY_DIM_FACTOR = 0.7;
-const COPY_FEATHER = 48;
-
-export function HeroParticles() {
+export function CtaParticles() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -30,41 +27,28 @@ export function HeroParticles() {
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
-    let dots: { x: number; y: number; phase: number; speed: number }[] = [];
+    let dots: { hx: number; hy: number; x: number; y: number; phase: number; speed: number }[] = [];
     let raf = 0;
     let frame = 0;
-    let copyRect: { left: number; top: number; right: number; bottom: number } | null = null;
 
-    // target mouse position vs. eased/rendered position, so the glow trails
-    // the cursor smoothly instead of snapping.
+    // target mouse position vs. eased/rendered position, so the repel field
+    // trails the cursor smoothly instead of snapping.
     const mouse = { targetX: -9999, targetY: -9999, x: -9999, y: -9999, active: false };
 
     function layout() {
-      const parentRect = parent!.getBoundingClientRect();
-      const { width, height } = parentRect;
+      const { width, height } = parent!.getBoundingClientRect();
       canvas!.width = width * dpr;
       canvas!.height = height * dpr;
       canvas!.style.width = `${width}px`;
       canvas!.style.height = `${height}px`;
       ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-      const copyEl = parent!.querySelector("[data-hero-copy]");
-      if (copyEl) {
-        const r = copyEl.getBoundingClientRect();
-        copyRect = {
-          left: r.left - parentRect.left,
-          top: r.top - parentRect.top,
-          right: r.right - parentRect.left,
-          bottom: r.bottom - parentRect.top,
-        };
-      } else {
-        copyRect = null;
-      }
-
       dots = [];
       for (let y = SPACING / 2; y < height; y += SPACING) {
         for (let x = SPACING / 2; x < width; x += SPACING) {
           dots.push({
+            hx: x,
+            hy: y,
             x,
             y,
             phase: Math.random() * Math.PI * 2,
@@ -79,41 +63,36 @@ export function HeroParticles() {
       const { width, height } = parent!.getBoundingClientRect();
       ctx!.clearRect(0, 0, width, height);
 
-      mouse.x += (mouse.targetX - mouse.x) * EASE;
-      mouse.y += (mouse.targetY - mouse.y) * EASE;
+      mouse.x += (mouse.targetX - mouse.x) * MOUSE_EASE;
+      mouse.y += (mouse.targetY - mouse.y) * MOUSE_EASE;
 
       for (const d of dots) {
         const t = reduceMotion ? 0.5 : (Math.sin(frame * d.speed + d.phase) + 1) / 2;
-        let alpha = ALPHA_MIN + t * (ALPHA_MAX - ALPHA_MIN);
-        let radius = RADIUS;
+        const alpha = ALPHA_MIN + t * (ALPHA_MAX - ALPHA_MIN);
 
-        if (copyRect) {
-          const dx = Math.max(copyRect.left - d.x, 0, d.x - copyRect.right);
-          const dy = Math.max(copyRect.top - d.y, 0, d.y - copyRect.bottom);
-          const distOutside = Math.sqrt(dx * dx + dy * dy);
-          const factor =
-            distOutside <= 0
-              ? COPY_DIM_FACTOR
-              : distOutside < COPY_FEATHER
-                ? COPY_DIM_FACTOR + (1 - COPY_DIM_FACTOR) * (distOutside / COPY_FEATHER)
-                : 1;
-          alpha *= factor;
-        }
+        let targetX = d.hx;
+        let targetY = d.hy;
 
         if (mouse.active) {
-          const dx = d.x - mouse.x;
-          const dy = d.y - mouse.y;
+          const dx = d.hx - mouse.x;
+          const dy = d.hy - mouse.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < HOVER_RADIUS) {
-            const proximity = 1 - dist / HOVER_RADIUS;
-            alpha = Math.max(alpha, alpha + (HOVER_ALPHA_MAX - alpha) * proximity);
-            radius = RADIUS + (HOVER_RADIUS_BOOST - 1) * RADIUS * proximity;
+          if (dist < REPEL_RADIUS) {
+            const proximity = 1 - dist / REPEL_RADIUS;
+            const push = proximity * proximity * REPEL_STRENGTH;
+            const nx = dist === 0 ? 1 : dx / dist;
+            const ny = dist === 0 ? 0 : dy / dist;
+            targetX = d.hx + nx * push;
+            targetY = d.hy + ny * push;
           }
         }
 
+        d.x += (targetX - d.x) * EASE;
+        d.y += (targetY - d.y) * EASE;
+
         ctx!.beginPath();
-        ctx!.arc(d.x, d.y, radius, 0, Math.PI * 2);
-        ctx!.fillStyle = `rgba(11, 11, 12, ${alpha.toFixed(3)})`;
+        ctx!.arc(d.x, d.y, RADIUS, 0, Math.PI * 2);
+        ctx!.fillStyle = `rgba(255, 255, 255, ${alpha.toFixed(3)})`;
         ctx!.fill();
       }
     }
