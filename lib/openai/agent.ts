@@ -3,7 +3,7 @@ import { z } from "zod";
 import type { GatewayTool } from "../gateway/types";
 
 // Shared OpenAI (Responses API) tool-use loop. Both the Playground "live test
-// chat" and the FlowPay orchestrator run through here, bound to whatever tool
+// chat" and the Flow orchestrator run through here, bound to whatever tool
 // list the caller passes in — the Monnify preset, or a gateway generated from
 // a pasted API. Same tools lib/mcp/server.ts exposes over MCP — one gateway,
 // many consumers. Reads OPENAI_API_KEY from the environment.

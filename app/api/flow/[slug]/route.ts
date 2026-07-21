@@ -1,4 +1,4 @@
-import { getFlowPay, claimFlowPay } from "@/lib/store/flowpay";
+import { getFlow, claimFlowPay } from "@/lib/store/flow";
 import { getCurrentSession } from "@/lib/auth/session";
 
 // Polled by app/dashboard/[slug]/page.tsx every 3s. Requires login — a page
@@ -6,9 +6,9 @@ import { getCurrentSession } from "@/lib/auth/session";
 // they view its dashboard; after that, only the owner can see it.
 export async function GET(request: Request, context: { params: Promise<{ slug: string }> }) {
   const { slug } = await context.params;
-  const record = await getFlowPay(slug);
+  const record = await getFlow(slug);
   if (!record) {
-    return Response.json({ error: `No FlowPay record for slug "${slug}".` }, { status: 404 });
+    return Response.json({ error: `No Flow record for slug "${slug}".` }, { status: 404 });
   }
 
   const session = await getCurrentSession();

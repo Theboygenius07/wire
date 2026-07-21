@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { ProductHeader } from "@/components/product/ProductHeader";
 import { RepelDotGrid } from "@/components/landing/RepelDotGrid";
-import type { FlowPayRecord } from "@/lib/store/flowpay";
+import type { FlowRecord } from "@/lib/store/flow";
 
 type Status = "loading" | "needsLogin" | "forbidden" | "notFound" | "ready";
 
@@ -97,7 +97,7 @@ function LoginGate({ onAuthed }: { onAuthed: (email: string) => void }) {
 
 export default function DashboardPage() {
   const { slug } = useParams<{ slug: string }>();
-  const [record, setRecord] = useState<FlowPayRecord | null>(null);
+  const [record, setRecord] = useState<FlowRecord | null>(null);
   const [status, setStatus] = useState<Status>("loading");
   const [email, setEmail] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -114,7 +114,7 @@ export default function DashboardPage() {
 
     async function poll() {
       try {
-        const res = await fetch(`/api/flowpay/${slug}`);
+        const res = await fetch(`/api/flow/${slug}`);
         if (cancelled) return;
         if (res.status === 404) return setStatus("notFound");
         if (res.status === 401) return setStatus("needsLogin");
@@ -157,7 +157,38 @@ export default function DashboardPage() {
       <>
         <ProductHeader label="Dashboard" />
         <main className="mx-auto flex max-w-6xl flex-1 items-center justify-center px-6 py-16">
-          <p className="text-[14.5px] text-muted">No FlowPay page found for &ldquo;{slug}&rdquo;.</p>
+          <p className="text-[14.5px] text-muted">No Flow page found for &ldquo;{slug}&rdquo;.</p>
+        </main>
+      </>
+    );
+  }
+
+  if (status === "needsLogin") {
+    return (
+      <>
+        <ProductHeader label="Dashboard" />
+        <LoginGate
+          onAuthed={(loggedInEmail) => {
+            setEmail(loggedInEmail);
+            setStatus("loading");
+          }}
+        />
+      </>
+    );
+  }
+
+  if (status === "forbidden") {
+    return (
+      <>
+        <ProductHeader label="Dashboard" />
+        <main className="mx-auto flex max-w-6xl flex-1 flex-col items-center justify-center gap-4 px-6 py-16 text-center">
+          <p className="text-[14.5px] text-muted">This dashboard belongs to another account{email ? ` (you're logged in as ${email})` : ""}.</p>
+          <button
+            onClick={logout}
+            className="text-[13.5px] font-medium text-ink underline decoration-ink/25 underline-offset-4 hover:decoration-ink"
+          >
+            Log out and try a different account
+          </button>
         </main>
       </>
     );
@@ -273,6 +304,14 @@ export default function DashboardPage() {
                 <p className="mt-4 text-[13px] text-muted">
                   No sales yet &mdash; share the checkout link to get started.
                 </p>
+              )}
+              {record?.lastConnectedAction && (
+                <div className="mt-4 flex items-center gap-2 rounded-lg border border-line bg-white px-3 py-2.5">
+                  <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
+                  <p className="text-[13px] text-ink">
+                    Last sale, in your connected system: {record.lastConnectedAction}
+                  </p>
+                </div>
               )}
             </div>
           </div>

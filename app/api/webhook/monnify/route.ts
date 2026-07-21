@@ -1,8 +1,11 @@
 import crypto from "crypto";
-import { recordSale } from "@/lib/store/flowpay";
+import { recordSale, saveConnectedAction } from "@/lib/store/flow";
+import { getSeller } from "@/lib/store/seller";
+import { getGateway, compileSpec } from "@/lib/gateway";
+import { runSellerAction } from "@/lib/openai/sellerAction";
 
 // Receives Monnify's payment-succeeded notifications and updates the
-// FlowPay dashboard. Verified against developers.monnify.com as of
+// Flow dashboard. Verified against developers.monnify.com as of
 // 2026-07-21: the "monnify-signature" header is HMAC-SHA512 over the raw
 // request body, keyed with the merchant's secret key — not a separate
 // webhook-specific secret, despite the name MONNIFY_WEBHOOK_SECRET (kept as
@@ -60,9 +63,29 @@ export async function POST(request: Request) {
   }
 
   // `reference` is whatever we passed as accountReference/invoiceReference
-  // when creating the sale (app/api/flowpay/route.ts uses the same value —
-  // our FlowPay slug — for both), so it doubles as the lookup key.
-  await recordSale(reference, amountPaid, transactionReference);
+  // when creating the sale (app/api/flow/route.ts uses the same value —
+  // our Flow slug — for both), so it doubles as the lookup key.
+  const record = await recordSale(reference, amountPaid, transactionReference);
+
+  // Fan out to whatever system the seller connected via /connect, if any.
+  // Best-effort: a failure here shouldn't turn into a non-2xx response,
+  // since that would make Monnify retry an event we've already recorded.
+  if (record?.sellerId) {
+    try {
+      const seller = await getSeller(record.sellerId);
+      const entry = seller ? await getGateway(seller.gatewayId) : undefined;
+      if (entry) {
+        const tools = compileSpec(entry.spec, entry.authValue);
+        const summary = await runSellerAction(
+          `Sold "${record.title}" for ₦${amountPaid}.`,
+          tools
+        );
+        await saveConnectedAction(reference, summary);
+      }
+    } catch (err) {
+      console.error("Connected-system action failed:", err);
+    }
+  }
 
   return Response.json({ received: true });
 }

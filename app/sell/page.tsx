@@ -1,6 +1,6 @@
 import { ProductHeader } from "@/components/product/ProductHeader";
 import { RepelDotGrid } from "@/components/landing/RepelDotGrid";
-import { FlowPayCreator } from "@/components/customer/FlowPayCreator";
+import { FlowCreator } from "@/components/customer/FlowCreator";
 import Link from "next/link";
 
 export default function SellPage() {
@@ -12,7 +12,7 @@ export default function SellPage() {
         <main className="mx-auto flex w-full max-w-6xl flex-1 items-center justify-center px-6 py-16">
           <div className="w-full max-w-lg">
             <div className="text-center">
-              <p className="text-[11px] font-semibold tracking-[0.1em] text-muted">FLOWPAY</p>
+              <p className="text-[11px] font-semibold tracking-[0.1em] text-muted">FLOW</p>
               <h1 className="font-heading mt-3 text-balance text-3xl font-medium tracking-tight text-ink sm:text-4xl">
                 Turn a sentence into a payment page.
               </h1>
@@ -22,9 +22,18 @@ export default function SellPage() {
               </p>
             </div>
 
-            <FlowPayCreator className="mt-8" />
+            <FlowCreator className="mt-8" />
 
             <p className="mt-6 text-center text-[12.5px] text-muted">
+              Already track stock or bookkeeping somewhere?{" "}
+              <Link
+                href="/connect"
+                className="font-medium text-ink underline decoration-ink/25 underline-offset-4 hover:decoration-ink"
+              >
+                Connect it
+              </Link>
+            </p>
+            <p className="mt-2 text-center text-[12.5px] text-muted">
               Prefer to work with APIs directly?{" "}
               <Link
                 href="/dev"
