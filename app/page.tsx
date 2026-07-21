@@ -73,8 +73,7 @@ export default function Home() {
           <RepelDotGrid />
           <div className="relative z-10 mx-auto w-full max-w-6xl px-6 py-16 sm:py-20">
             <div className="mx-auto max-w-lg text-center">
-              <p className="text-[11px] font-semibold tracking-[0.1em] text-muted">FLOWPAY</p>
-              <h1 className="font-heading mt-3 text-balance text-[2.25rem] font-medium leading-[1.05] tracking-[-0.02em] text-ink sm:text-5xl">
+              <h1 className="font-heading text-balance text-[2.25rem] font-medium leading-[1.05] tracking-[-0.02em] text-ink sm:text-5xl">
                 Turn a sentence into a payment page.
               </h1>
               <p className="mx-auto mt-5 max-w-md text-pretty text-[16px] leading-relaxed text-muted">
