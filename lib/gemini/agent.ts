@@ -9,7 +9,7 @@ import type { GatewayTool } from "../gateway/types";
 // consumers. Reads GEMINI_API_KEY (or GOOGLE_API_KEY) from the environment.
 
 const genai = new GoogleGenAI({});
-const MODEL = "gemini-3.1-flash-lite";
+const MODEL = "gemini-3.5-flash";
 
 export type TraceStep =
   | { type: "thinking"; text: string }
