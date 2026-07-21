@@ -11,10 +11,10 @@ import { Footer } from "@/components/landing/Footer";
 export const metadata: Metadata = {
   title: "Wire for developers — Any API. Every AI agent. One gateway.",
   description:
-    "Wire turns REST APIs into MCP tools automatically — proven live on Monnify's payments API.",
+    "Relay turns REST APIs into MCP tools automatically — proven live on Monnify's payments API. Built by Wire.",
 };
 
-export default function DevLanding() {
+export default function DevHub() {
   return (
     <>
       <Nav />
