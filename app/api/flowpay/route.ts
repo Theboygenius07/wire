@@ -1,4 +1,4 @@
-import { runAgent } from "@/lib/gemini/agent";
+import { runAgent } from "@/lib/openai/agent";
 import { monnifyGatewayTools } from "@/lib/monnify/tools";
 import { saveFlowPay, type FlowPayRecord } from "@/lib/store/flowpay";
 
