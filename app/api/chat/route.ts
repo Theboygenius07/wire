@@ -30,7 +30,7 @@ export async function POST(request: Request) {
 
   let tools = monnifyGatewayTools;
   if (body.gatewayId) {
-    const entry = getGateway(body.gatewayId);
+    const entry = await getGateway(body.gatewayId);
     if (!entry) {
       return Response.json({ error: `No gateway found for id "${body.gatewayId}".` }, { status: 404 });
     }

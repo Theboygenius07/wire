@@ -10,7 +10,7 @@ export const runtime = "nodejs";
 
 async function handle(request: Request, context: { params: Promise<{ id: string }> }) {
   const { id } = await context.params;
-  const entry = getGateway(id);
+  const entry = await getGateway(id);
   if (!entry) {
     return Response.json({ error: `No gateway found for id "${id}" — it may have been generated before a server restart.` }, { status: 404 });
   }

@@ -1,13 +1,13 @@
-import { promises as fs } from "fs";
-import path from "path";
+import { Redis } from "@upstash/redis";
 
-// Deliberately a flat JSON file, not a database: this only needs to survive
-// a single demo session on one running server. If you deploy to Vercel's
-// serverless functions (cold, ephemeral filesystem per invocation) swap this
-// for Vercel KV / Upstash Redis — same read/write shape, five-minute change.
+// Backed by Upstash Redis instead of a JSON file on disk: Vercel's
+// serverless functions have an ephemeral, per-instance filesystem, so a file
+// written by one request isn't guaranteed to exist for the next — exactly
+// the bug that made lib/gateway/registry.ts unreliable, just less obvious
+// here since local dev never hits it. Unlike generated gateways, FlowPay
+// records are real payment pages and get no TTL — they live indefinitely.
 
-const DATA_DIR = path.join(process.cwd(), "data");
-const FILE = path.join(DATA_DIR, "flowpay-store.json");
+const redis = Redis.fromEnv();
 
 export type FlowPayRecord = {
   slug: string;
@@ -26,35 +26,21 @@ export type FlowPayRecord = {
   processedTransactionRefs?: string[];
 };
 
-async function readAll(): Promise<Record<string, FlowPayRecord>> {
-  try {
-    const raw = await fs.readFile(FILE, "utf-8");
-    return JSON.parse(raw);
-  } catch {
-    return {};
-  }
-}
-
-async function writeAll(data: Record<string, FlowPayRecord>) {
-  await fs.mkdir(DATA_DIR, { recursive: true });
-  await fs.writeFile(FILE, JSON.stringify(data, null, 2));
+function key(slug: string): string {
+  return `flowpay:${slug}`;
 }
 
 export async function saveFlowPay(record: FlowPayRecord) {
-  const all = await readAll();
-  all[record.slug] = record;
-  await writeAll(all);
+  await redis.set(key(record.slug), record);
   return record;
 }
 
 export async function getFlowPay(slug: string) {
-  const all = await readAll();
-  return all[slug] ?? null;
+  return (await redis.get<FlowPayRecord>(key(slug))) ?? null;
 }
 
 export async function recordSale(slug: string, amountNaira: number, transactionReference: string) {
-  const all = await readAll();
-  const record = all[slug];
+  const record = await getFlowPay(slug);
   if (!record) return null;
 
   record.processedTransactionRefs ??= [];
@@ -65,6 +51,6 @@ export async function recordSale(slug: string, amountNaira: number, transactionR
   record.processedTransactionRefs.push(transactionReference);
   record.ticketsSold += 1;
   record.revenueNaira += amountNaira;
-  await writeAll(all);
+  await redis.set(key(slug), record);
   return record;
 }

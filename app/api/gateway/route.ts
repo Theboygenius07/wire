@@ -26,7 +26,7 @@ export async function POST(request: Request) {
   }
 
   const authValue = body.authValue || extractedAuthValue;
-  const id = saveGateway(spec, authValue);
+  const id = await saveGateway(spec, authValue);
 
   return Response.json({
     id,

@@ -3,7 +3,7 @@ import { getGateway } from "@/lib/gateway";
 // Downloadable MCP client config for a gateway generated from a pasted API.
 export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
   const { id } = await context.params;
-  const entry = getGateway(id);
+  const entry = await getGateway(id);
   if (!entry) {
     return Response.json({ error: `No gateway found for id "${id}".` }, { status: 404 });
   }
