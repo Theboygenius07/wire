@@ -139,19 +139,19 @@ export default function DashboardPage() {
       <ProductHeader label="Dashboard" back={{ href: "/flow", label: "Back to Flow" }} />
       <main className="relative z-0 flex-1 overflow-hidden">
         <RepelDotGrid />
-        <div className="relative z-10 mx-auto max-w-6xl px-6 py-16">
-        <div className="mb-10 flex items-center justify-between gap-2">
+        <div className="relative z-10 mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-16">
+        <div className="mb-8 flex flex-col gap-2 sm:mb-10 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
             <span className="h-1.5 w-1.5 rounded-full bg-accent" />
             <span className="text-[12.5px] font-medium uppercase tracking-[0.08em] text-muted">
               Live &mdash; updates every 3s
             </span>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
             {record && <span className="text-[12.5px] text-muted">Created {formatDate(record.createdAt)}</span>}
             {email && (
               <>
-                <span className="text-[12.5px] text-muted">·</span>
+                <span className="hidden text-[12.5px] text-muted sm:inline">·</span>
                 <span className="text-[12.5px] text-muted">{email}</span>
                 <button
                   onClick={logout}
@@ -165,7 +165,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h1 className="font-heading text-balance text-3xl font-medium tracking-tight text-ink sm:text-4xl">
+          <h1 className="font-heading text-balance text-2xl font-medium tracking-tight text-ink sm:text-3xl lg:text-4xl">
             {record ? record.title : "Loading…"}
           </h1>
           <Link
@@ -178,26 +178,26 @@ export default function DashboardPage() {
           </Link>
         </div>
 
-        <div className="mt-10 grid gap-5 lg:grid-cols-[1fr_320px]">
-          <div className="relative z-0 overflow-hidden rounded-2xl border border-panel-line bg-panel/60 p-8">
-            <div className="relative z-10 grid gap-8 sm:grid-cols-3">
+        <div className="mt-8 grid gap-5 sm:mt-10 lg:grid-cols-[1fr_320px]">
+          <div className="relative z-0 overflow-hidden rounded-2xl border border-panel-line bg-panel/60 p-5 sm:p-8">
+            <div className="relative z-10 grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 sm:gap-8">
               <div>
-                <p className="font-heading tabular-nums text-5xl font-medium text-ink">
+                <p className="font-heading tabular-nums text-3xl font-medium text-ink sm:text-4xl lg:text-5xl">
                   {record ? `${primaryCount}/${record.ticketCap}` : "—"}
                 </p>
-                <p className="mt-3 text-[14.5px] leading-relaxed text-muted">
+                <p className="mt-2 text-[12.5px] leading-relaxed text-muted sm:mt-3 sm:text-[14.5px]">
                   {record?.recurring ? "subscribers" : "sold"}
                 </p>
               </div>
               <div>
-                <p className="font-heading tabular-nums text-5xl font-medium text-ink">
+                <p className="font-heading tabular-nums text-3xl font-medium text-ink sm:text-4xl lg:text-5xl">
                   {record ? formatNaira(record.revenueNaira) : "—"}
                 </p>
-                <p className="mt-3 text-[14.5px] leading-relaxed text-muted">revenue</p>
+                <p className="mt-2 text-[12.5px] leading-relaxed text-muted sm:mt-3 sm:text-[14.5px]">revenue</p>
               </div>
               <div>
-                <p className="font-heading tabular-nums text-5xl font-medium text-ink">{Math.round(pct)}%</p>
-                <p className="mt-3 text-[14.5px] leading-relaxed text-muted">of cap</p>
+                <p className="font-heading tabular-nums text-3xl font-medium text-ink sm:text-4xl lg:text-5xl">{Math.round(pct)}%</p>
+                <p className="mt-2 text-[12.5px] leading-relaxed text-muted sm:mt-3 sm:text-[14.5px]">of cap</p>
               </div>
             </div>
 
@@ -230,7 +230,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="flex flex-col gap-5 rounded-2xl border border-line bg-white p-6">
+          <div className="flex flex-col gap-5 rounded-2xl border border-line bg-white p-5 sm:p-6">
             {record?.tiers?.length ? (
               <div>
                 <span className="text-[11px] font-semibold tracking-[0.1em] text-muted">TIERS</span>

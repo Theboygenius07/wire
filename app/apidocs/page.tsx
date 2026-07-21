@@ -27,27 +27,27 @@ function EndpointCard({ ep }: { ep: Endpoint }) {
   const id = slugify(ep.method, ep.path);
   return (
     <div id={id} className="scroll-mt-20 overflow-hidden rounded-2xl border border-line">
-      <div className="flex flex-wrap items-center gap-3 border-b border-line px-5 py-4">
+      <div className="flex flex-wrap items-center gap-2.5 border-b border-line px-4 py-3.5 sm:gap-3 sm:px-5 sm:py-4">
         <MethodBadge method={ep.method} />
-        <span className="font-mono text-[13.5px] text-ink">{ep.path}</span>
+        <span className="break-all font-mono text-[12.5px] text-ink sm:text-[13.5px]">{ep.path}</span>
         {ep.internal && (
           <span className="rounded-full border border-dashed border-panel-line px-2.5 py-1 font-mono text-[10.5px] text-muted">
             inbound only
           </span>
         )}
-        <span className="ml-auto rounded-full border border-line px-2.5 py-1 font-mono text-[10.5px] text-muted">
+        <span className="rounded-full border border-line px-2.5 py-1 font-mono text-[10.5px] text-muted sm:ml-auto">
           {ep.auth}
         </span>
       </div>
 
-      <div className="flex flex-col gap-5 p-5">
+      <div className="flex flex-col gap-5 p-4 sm:p-5">
         <p className="text-[13.5px] text-ink">{ep.summary}</p>
 
         {ep.body && ep.body.length > 0 && (
           <div>
             <p className="mb-2 font-mono text-[10.5px] uppercase tracking-[0.06em] text-muted">Body</p>
-            <div className="overflow-x-auto">
-              <table className="w-full border-collapse text-[12.5px]">
+            <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+              <table className="w-full min-w-[480px] border-collapse text-[12.5px]">
                 <thead>
                   <tr>
                     <th className="border-b border-line pb-2 text-left font-mono text-[10.5px] font-normal uppercase tracking-[0.05em] text-muted">
@@ -136,8 +136,34 @@ export default function ApiDocsPage() {
   return (
     <>
       <ProductHeader label="API Reference" />
+
+      <div className="sticky top-0 z-30 border-b border-line bg-background/95 px-4 py-2.5 backdrop-blur-sm lg:hidden">
+        <select
+          value={activeId ?? ""}
+          onChange={(e) => {
+            const id = e.target.value;
+            if (id) document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+          }}
+          className="w-full rounded-lg border border-line bg-white px-3 py-2 text-[13px] text-ink focus:border-ink/30 focus:outline-none"
+        >
+          <option value="" disabled>
+            Jump to&hellip;
+          </option>
+          {navGroups.map((group) => (
+            <optgroup key={group.title} label={group.title}>
+              {group.links.map((link) => (
+                <option key={link.id} value={link.id}>
+                  {link.method ? `${link.method} ` : ""}
+                  {link.path}
+                </option>
+              ))}
+            </optgroup>
+          ))}
+        </select>
+      </div>
+
       <div className="mx-auto flex max-w-6xl items-start">
-        <nav className="sticky top-16 hidden h-[calc(100vh-4rem)] w-[230px] shrink-0 overflow-y-auto border-r border-line px-5 py-8 lg:block">
+        <nav className="sticky top-0 hidden h-screen w-[230px] shrink-0 overflow-y-auto border-r border-line px-5 py-8 lg:block">
           {navGroups.map((group) => (
             <div key={group.title} className="mb-6">
               <p className="mb-2 font-mono text-[11px] uppercase tracking-[0.08em] text-muted">{group.title}</p>
@@ -159,7 +185,7 @@ export default function ApiDocsPage() {
           ))}
         </nav>
 
-        <main className="min-w-0 flex-1 px-6 py-12 sm:px-10">
+        <main className="min-w-0 flex-1 px-4 py-8 sm:px-6 sm:py-12 lg:px-10">
           <div className="mb-12 max-w-2xl">
             <p className="mb-3 flex items-center gap-2 font-mono text-[12px] uppercase tracking-[0.08em] text-muted">
               <span className="h-1.5 w-1.5 rounded-full bg-accent" /> Reference
