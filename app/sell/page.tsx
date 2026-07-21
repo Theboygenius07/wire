@@ -25,6 +25,15 @@ export default function SellPage() {
             <FlowPayCreator className="mt-8" />
 
             <p className="mt-6 text-center text-[12.5px] text-muted">
+              Already track stock or bookkeeping somewhere?{" "}
+              <Link
+                href="/connect"
+                className="font-medium text-ink underline decoration-ink/25 underline-offset-4 hover:decoration-ink"
+              >
+                Connect it
+              </Link>
+            </p>
+            <p className="mt-2 text-center text-[12.5px] text-muted">
               Prefer to work with APIs directly?{" "}
               <Link
                 href="/dev"

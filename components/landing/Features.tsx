@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { RepelDotGrid } from "./RepelDotGrid";
 
 const features = [
@@ -74,6 +75,12 @@ export function Features() {
               live checkout link, a QR code, and a dashboard. Monnify moves the money —
               Wire connects the sale to whatever else runs your business.
             </p>
+            <Link
+              href="/connect"
+              className="mt-4 inline-block text-[13.5px] font-medium text-ink underline decoration-ink/25 underline-offset-4 hover:decoration-ink"
+            >
+              See how connecting a system works &rarr;
+            </Link>
           </div>
           <div className="flex items-center gap-3 rounded-2xl border border-line bg-white p-4 sm:w-64">
             <div

@@ -94,6 +94,25 @@ export default function Home() {
                   <span className="h-1.5 w-1.5 rounded-full bg-accent" /> Live in seconds
                 </span>
               </div>
+
+              <p className="mt-6 text-[12.5px] text-muted">
+                Already track stock or bookkeeping somewhere?{" "}
+                <Link
+                  href="/connect"
+                  className="font-medium text-ink underline decoration-ink/25 underline-offset-4 hover:decoration-ink"
+                >
+                  Connect it
+                </Link>
+              </p>
+              <p className="mt-2 text-[12.5px] text-muted">
+                Prefer to work with APIs directly?{" "}
+                <Link
+                  href="/dev"
+                  className="font-medium text-ink underline decoration-ink/25 underline-offset-4 hover:decoration-ink"
+                >
+                  Open the developer platform
+                </Link>
+              </p>
             </div>
           </div>
         </section>
@@ -119,24 +138,55 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="mx-auto max-w-6xl px-6 py-20">
-          <div className="overflow-hidden rounded-2xl border border-panel-line bg-panel/60 p-8 text-center sm:p-12">
-            <p className="text-[11px] font-semibold tracking-[0.1em] text-muted">
-              BUILDING SOMETHING, NOT SELLING?
+        <section className="border-t border-line bg-surface">
+          <div className="mx-auto max-w-6xl px-6 py-20">
+            <p className="text-center text-[12.5px] font-medium uppercase tracking-[0.08em] text-muted">
+              More than a checkout link
             </p>
-            <h2 className="font-heading mx-auto mt-3 max-w-lg text-balance text-2xl font-medium tracking-tight text-ink sm:text-3xl">
-              Wire also turns any REST API into real MCP tools an AI agent can use.
+            <h2 className="font-heading mt-3 text-center text-balance text-3xl font-medium tracking-tight text-ink sm:text-4xl">
+              Everything else Wire can do
             </h2>
-            <p className="mx-auto mt-3 max-w-md text-[14.5px] leading-relaxed text-muted">
-              Paste an OpenAPI spec or a curl command, get a working MCP server in seconds, and
-              watch an agent use it — live trace included.
-            </p>
-            <Link
-              href="/dev"
-              className="mt-6 inline-block rounded-md border border-ink/15 bg-white px-6 py-3 text-[14px] font-medium text-ink transition-all duration-150 hover:border-ink/30 active:scale-[0.98]"
-            >
-              Explore the developer platform &rarr;
-            </Link>
+
+            <div className="mt-14 grid gap-5 sm:grid-cols-2">
+              <div className="overflow-hidden rounded-2xl border border-panel-line bg-panel/60 p-8">
+                <span className="text-[11px] font-semibold tracking-[0.1em] text-muted">
+                  KEEP YOUR RECORDS IN SYNC
+                </span>
+                <h3 className="font-heading mt-3 text-[22px] font-medium leading-snug tracking-tight text-ink">
+                  Already track stock or bookkeeping somewhere?
+                </h3>
+                <p className="mt-3 text-[14.5px] leading-relaxed text-muted">
+                  Connect the tool you already use — inventory, bookkeeping, whatever — and every
+                  confirmed sale updates it automatically. Monnify still moves 100% of the money,
+                  exactly as it does today.
+                </p>
+                <Link
+                  href="/connect"
+                  className="mt-6 inline-block rounded-md border border-ink/15 bg-white px-6 py-3 text-[14px] font-medium text-ink transition-all duration-150 hover:border-ink/30 active:scale-[0.98]"
+                >
+                  Connect your system &rarr;
+                </Link>
+              </div>
+
+              <div className="overflow-hidden rounded-2xl border border-panel-line bg-panel/60 p-8">
+                <span className="text-[11px] font-semibold tracking-[0.1em] text-muted">
+                  BUILDING SOMETHING, NOT SELLING?
+                </span>
+                <h3 className="font-heading mt-3 text-[22px] font-medium leading-snug tracking-tight text-ink">
+                  Any REST API becomes real MCP tools.
+                </h3>
+                <p className="mt-3 text-[14.5px] leading-relaxed text-muted">
+                  Paste an OpenAPI spec or a curl command, get a working MCP server in seconds,
+                  and watch an agent use it — live trace included.
+                </p>
+                <Link
+                  href="/dev"
+                  className="mt-6 inline-block rounded-md border border-ink/15 bg-white px-6 py-3 text-[14px] font-medium text-ink transition-all duration-150 hover:border-ink/30 active:scale-[0.98]"
+                >
+                  Explore the developer platform &rarr;
+                </Link>
+              </div>
+            </div>
           </div>
         </section>
       </main>
