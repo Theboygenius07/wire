@@ -24,6 +24,10 @@ export type FlowRecord = {
   /** Monnify transactionReferences already applied — Monnify retries webhook
    * delivery, so this is how recordSale avoids double-counting a retry. */
   processedTransactionRefs?: string[];
+  /** Owning account. Unset if created while the seller wasn't logged in —
+   * see claimFlow: the first logged-in viewer of an unowned dashboard
+   * becomes its owner. */
+  userId?: string;
   /** The browser-cookie seller token active when this page was created —
    * looked up against lib/store/seller.ts at webhook time to see whether a
    * connected system should hear about a sale. Not set for pages created
@@ -49,6 +53,19 @@ export async function saveFlow(record: FlowRecord) {
 
 export async function getFlow(slug: string) {
   return (await redis.get<FlowRecord>(key(slug))) ?? null;
+}
+
+/** If the record has no owner yet, the current viewer becomes the owner.
+ * Otherwise a no-op. Lets a page created before signup get "claimed" the
+ * first time its creator views the dashboard while logged in. */
+export async function claimFlow(slug: string, userId: string): Promise<FlowRecord | null> {
+  const record = await getFlow(slug);
+  if (!record) return null;
+  if (!record.userId) {
+    record.userId = userId;
+    await redis.set(key(slug), record);
+  }
+  return record;
 }
 
 export async function recordSale(slug: string, amountNaira: number, transactionReference: string) {

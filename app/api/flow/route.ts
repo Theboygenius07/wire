@@ -1,6 +1,7 @@
 import { runAgent } from "@/lib/openai/agent";
 import { monnifyGatewayTools } from "@/lib/monnify/tools";
 import { saveFlow, type FlowRecord } from "@/lib/store/flow";
+import { getCurrentSession } from "@/lib/auth/session";
 
 // Flow: "Create a payment page for hackathon tickets, ₦5,000, cap 100" in,
 // a live checkout link + dashboard out. Runs the same agent loop as
@@ -61,6 +62,11 @@ export async function POST(request: Request) {
     return Response.json({ error: "The agent's final answer wasn't valid JSON.", raw: lastText.text }, { status: 502 });
   }
 
+  // Creation stays account-free — but if the creator happens to already be
+  // logged in, stamp ownership immediately instead of waiting for the
+  // claim-on-first-view fallback in GET /api/flow/[slug].
+  const session = await getCurrentSession();
+
   const record: FlowRecord = {
     slug,
     title: String(parsed.title ?? "Untitled sale"),
@@ -73,7 +79,8 @@ export async function POST(request: Request) {
     bankName: typeof parsed.bankName === "string" ? parsed.bankName : undefined,
     checkoutUrl: typeof parsed.checkoutUrl === "string" ? parsed.checkoutUrl : undefined,
     createdAt: new Date().toISOString(),
-    sellerId: body.sellerId,
+    userId: session?.userId,
+    sellerId: typeof body.sellerId === "string" ? body.sellerId : undefined,
   };
 
   await saveFlow(record);

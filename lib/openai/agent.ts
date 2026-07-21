@@ -23,8 +23,7 @@ export type TraceStep =
 type ResponseItem =
   | { type: "reasoning"; summary?: Array<{ type: string; text: string }> }
   | { type: "message"; role: string; content?: Array<{ type: string; text?: string }> }
-  | { type: "function_call"; name: string; arguments: string; call_id: string }
-  | { type: string; [key: string]: unknown };
+  | { type: "function_call"; name: string; arguments: string; call_id: string };
 
 export async function runAgent(
   systemPrompt: string,

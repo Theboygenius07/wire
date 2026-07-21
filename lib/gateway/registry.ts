@@ -5,8 +5,10 @@ import type { GatewaySpec } from "./types";
 // routes as separate serverless instances with no shared memory, so a
 // gateway generated on one instance would be invisible to a request that
 // lands on another. Redis is the one place every instance can reach.
-// Generated gateways are still disposable (unlike Flow records), so they
-// carry a TTL rather than living forever.
+// Playground-generated gateways are disposable and carry a TTL. A gateway a
+// seller connects via /connect is not disposable — it's load-bearing
+// infrastructure for their sales, so saveGateway(..., { persist: true })
+// skips the TTL for that path.
 
 const redis = Redis.fromEnv();
 const TTL_SECONDS = 60 * 60 * 24 * 30; // 30 days
@@ -24,9 +26,18 @@ function key(id: string): string {
   return `gateway:${id}`;
 }
 
-export async function saveGateway(spec: GatewaySpec, authValue?: string): Promise<string> {
+export async function saveGateway(
+  spec: GatewaySpec,
+  authValue?: string,
+  opts?: { persist?: boolean }
+): Promise<string> {
   const id = randomId();
-  await redis.set(key(id), { spec, authValue }, { ex: TTL_SECONDS });
+  const entry: GatewayEntry = { spec, authValue };
+  if (opts?.persist) {
+    await redis.set(key(id), entry);
+  } else {
+    await redis.set(key(id), entry, { ex: TTL_SECONDS });
+  }
   return id;
 }
 
