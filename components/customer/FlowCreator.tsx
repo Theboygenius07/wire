@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { getOrCreateSellerId } from "@/lib/seller/token";
 
 type FlowPayResult = { slug: string; checkoutUrl: string; dashboardUrl: string };
 
@@ -21,7 +22,7 @@ export function FlowPayCreator({ className }: { className?: string }) {
       const res = await fetch("/api/flowpay", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({ prompt, sellerId: getOrCreateSellerId() }),
       });
       const data = await res.json();
       if (!res.ok) {

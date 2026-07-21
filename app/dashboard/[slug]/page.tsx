@@ -124,6 +124,14 @@ export default function DashboardPage() {
                   No sales yet &mdash; share the checkout link to get started.
                 </p>
               )}
+              {record?.lastConnectedAction && (
+                <div className="mt-4 flex items-center gap-2 rounded-lg border border-line bg-white px-3 py-2.5">
+                  <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
+                  <p className="text-[13px] text-ink">
+                    Last sale, in your connected system: {record.lastConnectedAction}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 

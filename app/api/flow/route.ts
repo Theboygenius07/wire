@@ -36,7 +36,7 @@ function randomSlug(len = 8): string {
 }
 
 export async function POST(request: Request) {
-  let body: { prompt?: string };
+  let body: { prompt?: string; sellerId?: string };
   try {
     body = await request.json();
   } catch {
@@ -73,6 +73,7 @@ export async function POST(request: Request) {
     bankName: typeof parsed.bankName === "string" ? parsed.bankName : undefined,
     checkoutUrl: typeof parsed.checkoutUrl === "string" ? parsed.checkoutUrl : undefined,
     createdAt: new Date().toISOString(),
+    sellerId: body.sellerId,
   };
 
   await saveFlowPay(record);
