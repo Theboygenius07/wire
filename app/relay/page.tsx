@@ -5,12 +5,13 @@ import { Footer } from "@/components/landing/Footer";
 import { HeroParticles } from "@/components/landing/HeroParticles";
 import { ProductPreview } from "@/components/landing/ProductPreview";
 import { RepelDotGrid } from "@/components/landing/RepelDotGrid";
+import { withSocial } from "@/lib/metadata";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withSocial({
   title: "Relay — Any API. Every AI agent. One gateway.",
   description:
     "Paste an OpenAPI spec or a raw curl command — get a working MCP server in seconds. Built by Wire.",
-};
+});
 
 const steps = [
   {

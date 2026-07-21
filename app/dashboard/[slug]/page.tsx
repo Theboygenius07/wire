@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import Link from "next/link";
 import { ProductHeader } from "@/components/product/ProductHeader";
 import { RepelDotGrid } from "@/components/landing/RepelDotGrid";
 import { AuthForm } from "@/components/auth/AuthForm";
@@ -163,9 +164,19 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <h1 className="font-heading text-balance text-3xl font-medium tracking-tight text-ink sm:text-4xl">
-          {record ? record.title : "Loading…"}
-        </h1>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h1 className="font-heading text-balance text-3xl font-medium tracking-tight text-ink sm:text-4xl">
+            {record ? record.title : "Loading…"}
+          </h1>
+          <Link
+            href={`/checkout/${slug}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[13.5px] font-medium text-ink underline decoration-ink/25 underline-offset-4 hover:decoration-ink"
+          >
+            View checkout page &rarr;
+          </Link>
+        </div>
 
         <div className="mt-10 grid gap-5 lg:grid-cols-[1fr_320px]">
           <div className="relative z-0 overflow-hidden rounded-2xl border border-panel-line bg-panel/60 p-8">

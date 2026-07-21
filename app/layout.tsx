@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { withSocial } from "@/lib/metadata";
 import "./globals.css";
 
 const saans = localFont({
@@ -31,11 +32,12 @@ const ppNeueMontreal = localFont({
   src: [{ path: "../ppneuemontreal-medium.otf", weight: "500", style: "normal" }],
 });
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withSocial({
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"),
   title: "Wire — Turn a sentence into a payment page.",
   description:
     "Describe what you're selling, get a checkout link, a QR code, and a live dashboard — powered by Monnify.",
-};
+});
 
 export default function RootLayout({
   children,

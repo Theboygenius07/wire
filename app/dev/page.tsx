@@ -7,12 +7,13 @@ import { HowItWorks } from "@/components/landing/HowItWorks";
 import { Stats } from "@/components/landing/Stats";
 import { CallToAction } from "@/components/landing/CallToAction";
 import { Footer } from "@/components/landing/Footer";
+import { withSocial } from "@/lib/metadata";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withSocial({
   title: "Wire for developers — Any API. Every AI agent. One gateway.",
   description:
     "Relay turns REST APIs into MCP tools automatically — proven live on Monnify's payments API. Built by Wire.",
-};
+});
 
 export default function DevHub() {
   return (

@@ -4,11 +4,12 @@ import { Nav } from "@/components/landing/Nav";
 import { CallToAction } from "@/components/landing/CallToAction";
 import { Footer } from "@/components/landing/Footer";
 import { RepelDotGrid } from "@/components/landing/RepelDotGrid";
+import { withSocial } from "@/lib/metadata";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withSocial({
   title: "Pricing — Wire",
   description: "Flow charges a per-sale fee, nothing up front. Relay's gateway is usage-based for developers building their own agents.",
-};
+});
 
 const proof = [
   { value: "0", label: "monthly fee to create a Flow page" },

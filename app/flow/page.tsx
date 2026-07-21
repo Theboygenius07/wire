@@ -9,12 +9,13 @@ import { Footer } from "@/components/landing/Footer";
 import { getCurrentSession } from "@/lib/auth/session";
 import { getFlowsByUser, claimFlowsBySeller } from "@/lib/store/flow";
 import { getPayoutAccount } from "@/lib/store/payout";
+import { withSocial } from "@/lib/metadata";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withSocial({
   title: "Flow — Turn a sentence into a payment page.",
   description:
     "Describe what you're selling, get a shareable link, a QR code, and a live dashboard — powered by Monnify. Built by Wire.",
-};
+});
 
 const steps = [
   {

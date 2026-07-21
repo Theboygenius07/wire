@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import QRCode from "qrcode";
 import { getFlow } from "@/lib/store/flow";
@@ -5,12 +6,23 @@ import { getSubscriptionsForFlow } from "@/lib/store/subscription";
 import { ProductHeader } from "@/components/product/ProductHeader";
 import { RepelDotGrid } from "@/components/landing/RepelDotGrid";
 import { TierPicker } from "@/components/customer/TierPicker";
-
-function formatNaira(amount: number): string {
-  return `₦${amount.toLocaleString("en-NG")}`;
-}
+import { formatNaira, flowPriceLabel } from "@/lib/flow/priceLabel";
+import { withSocial } from "@/lib/metadata";
 
 const FREQUENCY_LABEL = { daily: "day", weekly: "week", monthly: "month" } as const;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const record = await getFlow(slug);
+  if (!record) return { title: "Payment page not found — Wire" };
+
+  const description = `${flowPriceLabel(record)} · Pay securely with Wire, powered by Monnify.`;
+  return withSocial({ title: `${record.title} — Wire`, description });
+}
 
 export default async function CheckoutPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;

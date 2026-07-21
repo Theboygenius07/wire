@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { RepelDotGrid } from "@/components/landing/RepelDotGrid";
+import { withSocial } from "@/lib/metadata";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = withSocial({
   title: "Wire",
   description: "We build developer and consumer infrastructure, powered by AI.",
-};
+});
 
 const products = [
   {
