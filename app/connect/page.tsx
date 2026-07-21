@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ProductHeader } from "@/components/product/ProductHeader";
 import { RepelDotGrid } from "@/components/landing/RepelDotGrid";
 import { getOrCreateSellerId } from "@/lib/seller/token";
@@ -34,7 +34,9 @@ const guides: Record<GuideKey, { label: string; tokenUrl: string; tokenLabel: st
 };
 
 export default function ConnectPage() {
-  const [sellerId, setSellerId] = useState<string | null>(null);
+  // Not render state — read once from the cookie and only touched inside
+  // event handlers, so a ref avoids the extra render a useState would cause.
+  const sellerIdRef = useRef<string | null>(null);
   const [checkingExisting, setCheckingExisting] = useState(true);
   const [connected, setConnected] = useState<ConnectedState | null>(null);
 
@@ -46,7 +48,7 @@ export default function ConnectPage() {
 
   useEffect(() => {
     const id = getOrCreateSellerId();
-    setSellerId(id);
+    sellerIdRef.current = id;
     fetch(`/api/seller?sellerId=${encodeURIComponent(id)}`)
       .then((res) => (res.ok ? res.json() : null))
       .then((record) => {
@@ -56,6 +58,7 @@ export default function ConnectPage() {
   }, []);
 
   async function handleConnect() {
+    const sellerId = sellerIdRef.current;
     if (!input.trim() || !sellerId) return;
     setLoading(true);
     setError(null);
@@ -63,7 +66,7 @@ export default function ConnectPage() {
       const gatewayRes = await fetch("/api/gateway", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ input, authValue: authValue || undefined }),
+        body: JSON.stringify({ input, authValue: authValue || undefined, persist: true }),
       });
       const gatewayData = await gatewayRes.json();
       if (!gatewayRes.ok) throw new Error(gatewayData.error ?? "Couldn't read that API.");

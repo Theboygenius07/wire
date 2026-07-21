@@ -64,7 +64,7 @@ export async function POST(request: Request) {
 
   // Creation stays account-free — but if the creator happens to already be
   // logged in, stamp ownership immediately instead of waiting for the
-  // claim-on-first-view fallback in GET /api/flowpay/[slug].
+  // claim-on-first-view fallback in GET /api/flow/[slug].
   const session = await getCurrentSession();
 
   const record: FlowRecord = {
@@ -79,6 +79,8 @@ export async function POST(request: Request) {
     bankName: typeof parsed.bankName === "string" ? parsed.bankName : undefined,
     checkoutUrl: typeof parsed.checkoutUrl === "string" ? parsed.checkoutUrl : undefined,
     createdAt: new Date().toISOString(),
+    userId: session?.userId,
+    sellerId: typeof body.sellerId === "string" ? body.sellerId : undefined,
   };
 
   await saveFlow(record);

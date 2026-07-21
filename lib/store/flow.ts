@@ -25,7 +25,7 @@ export type FlowRecord = {
    * delivery, so this is how recordSale avoids double-counting a retry. */
   processedTransactionRefs?: string[];
   /** Owning account. Unset if created while the seller wasn't logged in —
-   * see claimFlowPay: the first logged-in viewer of an unowned dashboard
+   * see claimFlow: the first logged-in viewer of an unowned dashboard
    * becomes its owner. */
   userId?: string;
   /** The browser-cookie seller token active when this page was created —
@@ -58,8 +58,8 @@ export async function getFlow(slug: string) {
 /** If the record has no owner yet, the current viewer becomes the owner.
  * Otherwise a no-op. Lets a page created before signup get "claimed" the
  * first time its creator views the dashboard while logged in. */
-export async function claimFlowPay(slug: string, userId: string): Promise<FlowPayRecord | null> {
-  const record = await getFlowPay(slug);
+export async function claimFlow(slug: string, userId: string): Promise<FlowRecord | null> {
+  const record = await getFlow(slug);
   if (!record) return null;
   if (!record.userId) {
     record.userId = userId;

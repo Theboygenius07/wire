@@ -4,7 +4,7 @@ import { parseInput, saveGateway } from "@/lib/gateway";
 // OpenAPI spec, compiles it into a GatewaySpec, and registers it so the
 // Playground can point /api/gateway/[id]/mcp and the live chat panel at it.
 export async function POST(request: Request) {
-  let body: { input?: string; authValue?: string };
+  let body: { input?: string; authValue?: string; persist?: boolean };
   try {
     body = await request.json();
   } catch {
@@ -26,7 +26,7 @@ export async function POST(request: Request) {
   }
 
   const authValue = body.authValue || extractedAuthValue;
-  const id = await saveGateway(spec, authValue);
+  const id = await saveGateway(spec, authValue, { persist: body.persist === true });
 
   return Response.json({
     id,

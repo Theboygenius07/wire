@@ -1,4 +1,4 @@
-import { getFlow, claimFlowPay } from "@/lib/store/flow";
+import { getFlow, claimFlow } from "@/lib/store/flow";
 import { getCurrentSession } from "@/lib/auth/session";
 
 // Polled by app/dashboard/[slug]/page.tsx every 3s. Requires login — a page
@@ -16,7 +16,7 @@ export async function GET(request: Request, context: { params: Promise<{ slug: s
     return Response.json({ error: "Log in to view this dashboard." }, { status: 401 });
   }
 
-  const owned = record.userId ? record : await claimFlowPay(slug, session.userId);
+  const owned = record.userId ? record : await claimFlow(slug, session.userId);
   if (!owned || owned.userId !== session.userId) {
     return Response.json({ error: "This dashboard belongs to another account." }, { status: 403 });
   }

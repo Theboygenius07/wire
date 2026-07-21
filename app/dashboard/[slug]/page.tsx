@@ -194,37 +194,6 @@ export default function DashboardPage() {
     );
   }
 
-  if (status === "needsLogin") {
-    return (
-      <>
-        <ProductHeader label="Dashboard" />
-        <LoginGate
-          onAuthed={(loggedInEmail) => {
-            setEmail(loggedInEmail);
-            setStatus("loading");
-          }}
-        />
-      </>
-    );
-  }
-
-  if (status === "forbidden") {
-    return (
-      <>
-        <ProductHeader label="Dashboard" />
-        <main className="mx-auto flex max-w-6xl flex-1 flex-col items-center justify-center gap-4 px-6 py-16 text-center">
-          <p className="text-[14.5px] text-muted">This dashboard belongs to another account{email ? ` (you're logged in as ${email})` : ""}.</p>
-          <button
-            onClick={logout}
-            className="text-[13.5px] font-medium text-ink underline decoration-ink/25 underline-offset-4 hover:decoration-ink"
-          >
-            Log out and try a different account
-          </button>
-        </main>
-      </>
-    );
-  }
-
   const pct = record && record.ticketCap > 0 ? Math.min(100, (record.ticketsSold / record.ticketCap) * 100) : 0;
 
   async function copyLink() {

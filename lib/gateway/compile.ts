@@ -44,6 +44,19 @@ function buildHandler(spec: GatewaySpec, op: GatewayOperation, authValue: string
       } else if (param.location === "header") {
         headers[param.name] = String(value);
       } else {
+        // Body params are typed string/number/boolean (see zodForParam) even
+        // when the real field is a nested array/object — e.g. Airtable's
+        // `records: [...]`. The model is told to pass those as a JSON-encoded
+        // string; parse it back into real JSON here so it round-trips as an
+        // actual array/object instead of getting double-encoded as a string.
+        if (typeof value === "string" && /^[[{]/.test(value.trim())) {
+          try {
+            body[param.name] = JSON.parse(value);
+            continue;
+          } catch {
+            // Not actually valid JSON — fall through and send the raw string.
+          }
+        }
         body[param.name] = value;
       }
     }

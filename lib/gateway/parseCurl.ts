@@ -26,6 +26,14 @@ function inferJsonType(value: unknown): GatewayParam["type"] {
   return "string";
 }
 
+function bodyFieldDescription(value: unknown): string {
+  if (Array.isArray(value) || (typeof value === "object" && value !== null)) {
+    const example = JSON.stringify(value).slice(0, 200);
+    return `From the example curl command's JSON body — this is a nested array/object; pass it as a JSON-encoded string, e.g. "${example}"`;
+  }
+  return "From the example curl command's JSON body";
+}
+
 export function parseCurl(input: string): { spec: GatewaySpec; authValue?: string } {
   const withoutLineContinuations = input.replace(/\\\s*\n/g, " ");
   const tokens = tokenize(withoutLineContinuations);
@@ -123,7 +131,7 @@ export function parseCurl(input: string): { spec: GatewaySpec; authValue?: strin
             location: "body",
             type: inferJsonType(value),
             required: true,
-            description: "From the example curl command's JSON body",
+            description: bodyFieldDescription(value),
           });
         }
       }
