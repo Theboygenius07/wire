@@ -5,14 +5,14 @@ const features = [
     tag: "GATEWAY",
     title: "Paste an API.",
     titleMuted: "Get real MCP tools.",
-    body: "Wire parses an OpenAPI spec or a raw curl command and generates a working MCP server — typed schemas, real handlers, downloadable mcp.json. Point Claude Desktop or Cursor at it directly.",
+    body: "Wire parses an OpenAPI spec or a raw curl command and generates a working MCP server — typed schemas, real handlers, downloadable mcp.json. Point any MCP-compatible agent at it directly.",
     chip: "mcp.json →",
   },
   {
     tag: "PLAYGROUND",
     title: "Watch an agent",
     titleMuted: "actually use them.",
-    body: "Type a request in plain English. See the exact trace: reasoning, the tool it picked, the call it made, and the real response from Monnify's sandbox — not a simulation.",
+    body: "Type a request in plain English. See the exact trace: reasoning, the tool it picked, the call it made, and the real response from the live API behind it — not a simulation.",
     chip: "trace: live",
   },
 ];
@@ -71,8 +71,8 @@ export function Features() {
             </h3>
             <p className="mt-3 text-[14.5px] leading-relaxed text-muted">
               &ldquo;Create a payment page for hackathon tickets, ₦5,000, cap 100&rdquo; becomes a
-              live checkout link, a QR code, and a dashboard — built entirely from the same
-              generated tools.
+              live checkout link, a QR code, and a dashboard. Monnify moves the money —
+              Wire connects the sale to whatever else runs your business.
             </p>
           </div>
           <div className="flex items-center gap-3 rounded-2xl border border-line bg-white p-4 sm:w-64">

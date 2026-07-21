@@ -12,7 +12,7 @@ export function Hero() {
             built live for apiconf 2026
             <span className="inline-flex items-center gap-1.5 rounded-md border border-line bg-surface px-2 py-1 text-[12px] normal-case tracking-normal text-ink">
               <span className="h-1.5 w-1.5 rounded-full bg-accent" />
-              live demo, not a mock
+              powered by Monnify
             </span>
           </div>
 
@@ -25,9 +25,9 @@ export function Hero() {
               Wire turns any REST API into real MCP tools — automatically.
             </span>{" "}
             <span className="text-muted">
-              Monnify moves the money. Wire builds what sits on top of it —
-              an agent that turns those tools into a working checkout, from
-              a single sentence.
+              One sentence becomes a working checkout, and every sale
+              updates your inventory, your books, your team — without you
+              lifting a finger.
             </span>
           </p>
 

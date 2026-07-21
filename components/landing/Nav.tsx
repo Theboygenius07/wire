@@ -8,7 +8,7 @@ export function Nav() {
   return (
     <header className="sticky top-0 z-50 border-b border-line bg-background/95 backdrop-blur-sm">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-        <a href="#top" className="group flex items-center gap-2">
+        <a href="/" className="group flex items-center gap-2">
           <span className="flex h-6 w-6 items-center justify-center rounded-[6px] bg-ink text-background transition-transform duration-200 group-hover:-rotate-6">
             <span className="text-[13px] font-semibold leading-none">W</span>
           </span>

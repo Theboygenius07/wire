@@ -11,7 +11,8 @@ export function CallToAction() {
           Try it live.
         </h2>
         <p className="relative z-10 mx-auto mt-5 max-w-md text-[15px] text-background/60">
-          The Monnify preset works with zero setup — paste your own API if you want to see it generalize.
+          The Monnify preset works with zero setup — paste your own API if you want to see it
+          generalize.
         </p>
         <div className="relative z-10 mt-9 flex flex-wrap items-center justify-center gap-4">
           <a
@@ -27,6 +28,12 @@ export function CallToAction() {
             View source
           </a>
         </div>
+        <a
+          href="/"
+          className="relative z-10 mt-8 inline-block text-[13.5px] font-medium text-background/50 underline decoration-background/25 underline-offset-4 transition-colors hover:text-background/80 hover:decoration-background/60"
+        >
+          Looking to sell something instead? &rarr;
+        </a>
       </div>
     </section>
   );

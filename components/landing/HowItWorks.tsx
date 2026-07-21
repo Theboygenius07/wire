@@ -17,7 +17,7 @@ const steps = [
   {
     n: "04",
     title: "Ship the result",
-    body: "A checkout page, a QR code, a dashboard — built from the tools, not bolted on after.",
+    body: "A checkout page, a QR code, a live dashboard — built from the same tools, and wired to update whatever else runs your business.",
   },
 ];
 

@@ -32,9 +32,9 @@ const ppNeueMontreal = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Wire — Any API. Every AI agent. One gateway.",
+  title: "Wire — Turn a sentence into a payment page.",
   description:
-    "Wire turns REST APIs into MCP tools automatically — proven live on Monnify's payments API.",
+    "Describe what you're selling, get a checkout link, a QR code, and a live dashboard — powered by Monnify.",
 };
 
 export default function RootLayout({
