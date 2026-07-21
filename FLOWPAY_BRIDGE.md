@@ -95,3 +95,6 @@ gracefully).
 - Pick 1–2 real example "seller systems" to test against, if there's a
   specific one worth prioritizing (otherwise generic test APIs will be
   used).
+
+
+im using openai now so ignore any gemini shit
