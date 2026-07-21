@@ -8,6 +8,7 @@ import { AuthForm } from "@/components/auth/AuthForm";
 import type { FlowRecord } from "@/lib/store/flow";
 
 type Status = "loading" | "needsLogin" | "forbidden" | "notFound" | "ready";
+type DashboardRecord = FlowRecord & { subscriberCount?: number };
 
 function formatNaira(amount: number): string {
   return `₦${amount.toLocaleString("en-NG")}`;
@@ -17,9 +18,11 @@ function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
+const FREQUENCY_LABEL = { daily: "day", weekly: "week", monthly: "month" } as const;
+
 export default function DashboardPage() {
   const { slug } = useParams<{ slug: string }>();
-  const [record, setRecord] = useState<FlowRecord | null>(null);
+  const [record, setRecord] = useState<DashboardRecord | null>(null);
   const [status, setStatus] = useState<Status>("loading");
   const [email, setEmail] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -66,7 +69,7 @@ export default function DashboardPage() {
   if (status === "loading") {
     return (
       <>
-        <ProductHeader label="Dashboard" />
+        <ProductHeader label="Dashboard" back={{ href: "/flow", label: "Back to Flow" }} />
         <main className="mx-auto flex max-w-6xl flex-1 items-center justify-center px-6 py-16">
           <p className="text-[14.5px] text-muted">Loading…</p>
         </main>
@@ -77,7 +80,7 @@ export default function DashboardPage() {
   if (status === "notFound") {
     return (
       <>
-        <ProductHeader label="Dashboard" />
+        <ProductHeader label="Dashboard" back={{ href: "/flow", label: "Back to Flow" }} />
         <main className="mx-auto flex max-w-6xl flex-1 items-center justify-center px-6 py-16">
           <p className="text-[14.5px] text-muted">No Flow page found for &ldquo;{slug}&rdquo;.</p>
         </main>
@@ -88,7 +91,7 @@ export default function DashboardPage() {
   if (status === "needsLogin") {
     return (
       <>
-        <ProductHeader label="Dashboard" />
+        <ProductHeader label="Dashboard" back={{ href: "/flow", label: "Back to Flow" }} />
         <main className="mx-auto flex max-w-6xl flex-1 items-center justify-center px-6 py-16">
           <AuthForm
             title="Log in to view this dashboard."
@@ -106,7 +109,7 @@ export default function DashboardPage() {
   if (status === "forbidden") {
     return (
       <>
-        <ProductHeader label="Dashboard" />
+        <ProductHeader label="Dashboard" back={{ href: "/flow", label: "Back to Flow" }} />
         <main className="mx-auto flex max-w-6xl flex-1 flex-col items-center justify-center gap-4 px-6 py-16 text-center">
           <p className="text-[14.5px] text-muted">This dashboard belongs to another account{email ? ` (you're logged in as ${email})` : ""}.</p>
           <button
@@ -120,7 +123,8 @@ export default function DashboardPage() {
     );
   }
 
-  const pct = record && record.ticketCap > 0 ? Math.min(100, (record.ticketsSold / record.ticketCap) * 100) : 0;
+  const primaryCount = record?.recurring ? record.subscriberCount ?? 0 : record?.ticketsSold ?? 0;
+  const pct = record && record.ticketCap > 0 ? Math.min(100, (primaryCount / record.ticketCap) * 100) : 0;
 
   async function copyLink() {
     if (!record?.checkoutUrl) return;
@@ -131,7 +135,7 @@ export default function DashboardPage() {
 
   return (
     <>
-      <ProductHeader label="Dashboard" />
+      <ProductHeader label="Dashboard" back={{ href: "/flow", label: "Back to Flow" }} />
       <main className="relative z-0 flex-1 overflow-hidden">
         <RepelDotGrid />
         <div className="relative z-10 mx-auto max-w-6xl px-6 py-16">
@@ -168,9 +172,11 @@ export default function DashboardPage() {
             <div className="relative z-10 grid gap-8 sm:grid-cols-3">
               <div>
                 <p className="font-heading tabular-nums text-5xl font-medium text-ink">
-                  {record ? `${record.ticketsSold}/${record.ticketCap}` : "—"}
+                  {record ? `${primaryCount}/${record.ticketCap}` : "—"}
                 </p>
-                <p className="mt-3 text-[14.5px] leading-relaxed text-muted">sold</p>
+                <p className="mt-3 text-[14.5px] leading-relaxed text-muted">
+                  {record?.recurring ? "subscribers" : "sold"}
+                </p>
               </div>
               <div>
                 <p className="font-heading tabular-nums text-5xl font-medium text-ink">
@@ -195,9 +201,11 @@ export default function DashboardPage() {
                 <span>0</span>
                 <span>{record?.ticketCap ?? "—"}</span>
               </div>
-              {record && record.ticketsSold === 0 && (
+              {record && primaryCount === 0 && (
                 <p className="mt-4 text-[13px] text-muted">
-                  No sales yet &mdash; share the checkout link to get started.
+                  {record.recurring
+                    ? "No subscribers yet — share the checkout link to get started."
+                    : "No sales yet — share the checkout link to get started."}
                 </p>
               )}
               {record?.lastConnectedAction && (
@@ -212,13 +220,40 @@ export default function DashboardPage() {
           </div>
 
           <div className="flex flex-col gap-5 rounded-2xl border border-line bg-white p-6">
-            <div>
-              <span className="text-[11px] font-semibold tracking-[0.1em] text-muted">PRODUCT</span>
-              <p className="mt-2 font-heading tabular-nums text-2xl font-medium text-ink">
-                {record ? formatNaira(record.priceNaira) : "—"}
-              </p>
-              <p className="mt-1 text-[13px] text-muted">per ticket</p>
-            </div>
+            {record?.tiers?.length ? (
+              <div>
+                <span className="text-[11px] font-semibold tracking-[0.1em] text-muted">TIERS</span>
+                <ul className="mt-2 space-y-2.5">
+                  {record.tiers.map((tier) => (
+                    <li key={tier.id} className="flex items-center justify-between gap-2">
+                      <p className="truncate text-[13.5px] text-ink">{tier.name}</p>
+                      <p className="shrink-0 font-mono text-[12.5px] text-muted">
+                        {formatNaira(tier.priceNaira)} · {tier.sold}/{tier.cap}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : record?.recurring ? (
+              <div>
+                <span className="text-[11px] font-semibold tracking-[0.1em] text-muted">SUBSCRIPTION</span>
+                <p className="mt-2 font-heading tabular-nums text-2xl font-medium text-ink">
+                  {formatNaira(record.priceNaira)}
+                </p>
+                <p className="mt-1 text-[13px] text-muted">per {FREQUENCY_LABEL[record.recurring.frequency]}</p>
+                <p className="mt-3 border-t border-line pt-3 text-[13px] text-muted">
+                  {record.subscriberCount ?? 0} active subscriber{record.subscriberCount === 1 ? "" : "s"}
+                </p>
+              </div>
+            ) : (
+              <div>
+                <span className="text-[11px] font-semibold tracking-[0.1em] text-muted">PRODUCT</span>
+                <p className="mt-2 font-heading tabular-nums text-2xl font-medium text-ink">
+                  {record ? formatNaira(record.priceNaira) : "—"}
+                </p>
+                <p className="mt-1 text-[13px] text-muted">per ticket</p>
+              </div>
+            )}
 
             {record?.accountNumber && (
               <div className="flex items-center justify-between border-t border-line pt-5">

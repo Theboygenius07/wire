@@ -1,10 +1,61 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { getOrCreateSellerId } from "@/lib/seller/token";
 
 type FlowResult = { slug: string; checkoutUrl: string; dashboardUrl: string };
+
+const EXAMPLE_PROMPTS = [
+  "Sell tickets to my Saturday event — VIP ₦10,000 (cap 20), Regular ₦4,000 (cap 100)",
+  "Create a payment page for hackathon tickets, ₦5,000, cap 100",
+  "Sell my ebook for ₦2,500",
+  "Workshop seats at ₦7,500 each, 40 spots",
+  "Pre-order my sneakers, ₦15,000, limited to 50 pairs",
+];
+
+// Types each example out, pauses, deletes it, then moves to the next — pure
+// state-driven (no real DOM placeholder swap, which can't animate) so it
+// works with a plain <textarea placeholder>. Stops as soon as the visitor
+// starts typing their own prompt, since the placeholder isn't visible then
+// anyway and there's no reason to keep ticking.
+function useTypewriterPlaceholder(examples: string[], enabled: boolean): string {
+  const [text, setText] = useState("");
+
+  useEffect(() => {
+    if (!enabled) return;
+
+    let exampleIndex = 0;
+    let charIndex = 0;
+    let deleting = false;
+    let timeoutId: ReturnType<typeof setTimeout>;
+
+    function tick() {
+      const current = examples[exampleIndex];
+      if (!deleting) {
+        charIndex++;
+        setText(current.slice(0, charIndex));
+        timeoutId = setTimeout(tick, charIndex === current.length ? 1800 : 35);
+        if (charIndex === current.length) deleting = true;
+      } else {
+        charIndex--;
+        setText(current.slice(0, charIndex));
+        if (charIndex === 0) {
+          deleting = false;
+          exampleIndex = (exampleIndex + 1) % examples.length;
+          timeoutId = setTimeout(tick, 400);
+        } else {
+          timeoutId = setTimeout(tick, 18);
+        }
+      }
+    }
+
+    timeoutId = setTimeout(tick, 35);
+    return () => clearTimeout(timeoutId);
+  }, [enabled, examples]);
+
+  return text;
+}
 
 export function FlowCreator({ className }: { className?: string }) {
   const [prompt, setPrompt] = useState("");
@@ -12,6 +63,25 @@ export function FlowCreator({ className }: { className?: string }) {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<FlowResult | null>(null);
   const [copied, setCopied] = useState(false);
+  const [showPayoutWarning, setShowPayoutWarning] = useState(false);
+  const animatedPlaceholder = useTypewriterPlaceholder(EXAMPLE_PROMPTS, !prompt);
+
+  // Sales from a page created while logged in but without a payout account
+  // go straight to the platform's own Monnify wallet, with no way to
+  // retroactively fix that specific page once it exists (see
+  // app/api/flow/route.ts) — warn before creation rather than let it happen
+  // silently.
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((me) => {
+        if (!me) return;
+        return fetch("/api/payout")
+          .then((r) => (r.ok ? r.json() : null))
+          .then((d) => setShowPayoutWarning(!d?.account));
+      })
+      .catch(() => {});
+  }, []);
 
   async function handleCreate() {
     if (!prompt.trim()) return;
@@ -49,6 +119,27 @@ export function FlowCreator({ className }: { className?: string }) {
     >
       {!result ? (
         <>
+          {showPayoutWarning && (
+            <div className="mb-4 flex items-start justify-between gap-3 rounded-lg border border-line bg-panel/60 px-3 py-2.5">
+              <p className="text-[12.5px] leading-relaxed text-ink">
+                You haven&rsquo;t set up a payout account yet — sales from a page you create now go to
+                the platform account, not to you.{" "}
+                <a
+                  href="#account-bar"
+                  className="font-medium underline decoration-ink/25 underline-offset-4 hover:decoration-ink"
+                >
+                  Set up now
+                </a>
+              </p>
+              <button
+                onClick={() => setShowPayoutWarning(false)}
+                aria-label="Dismiss"
+                className="shrink-0 text-[13px] text-muted hover:text-ink"
+              >
+                &times;
+              </button>
+            </div>
+          )}
           <label className="text-[13px] font-medium text-ink">What are you selling?</label>
           <textarea
             value={prompt}
@@ -59,7 +150,7 @@ export function FlowCreator({ className }: { className?: string }) {
                 handleCreate();
               }
             }}
-            placeholder="Sell tickets to my Saturday event, ₦5,000 each, 100 max"
+            placeholder={animatedPlaceholder}
             rows={3}
             className="mt-2 w-full rounded-lg border border-line bg-white p-3 text-[14.5px] text-ink placeholder:text-muted focus:border-ink/30 focus:outline-none"
           />

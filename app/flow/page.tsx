@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { Nav } from "@/components/landing/Nav";
 import { RepelDotGrid } from "@/components/landing/RepelDotGrid";
 import { FlowCreator } from "@/components/customer/FlowCreator";
 import { AccountBar } from "@/components/customer/AccountBar";
 import { Footer } from "@/components/landing/Footer";
 import { getCurrentSession } from "@/lib/auth/session";
-import { getFlowsByUser } from "@/lib/store/flow";
+import { getFlowsByUser, claimFlowsBySeller } from "@/lib/store/flow";
+import { getPayoutAccount } from "@/lib/store/payout";
 
 export const metadata: Metadata = {
   title: "Flow — Turn a sentence into a payment page.",
@@ -34,12 +36,18 @@ const steps = [
 
 export default async function FlowLanding() {
   const session = await getCurrentSession();
+
+  if (session) {
+    const sellerId = (await cookies()).get("wire_seller_id")?.value;
+    if (sellerId) await claimFlowsBySeller(sellerId, session.userId);
+  }
+
   const flows = session ? await getFlowsByUser(session.userId) : [];
+  const payoutAccount = session ? await getPayoutAccount(session.userId) : null;
 
   return (
     <>
       <Nav />
-      <AccountBar initialEmail={session?.email ?? null} initialFlows={flows} />
       <main className="flex-1">
         <section
           id="top-form"
@@ -47,6 +55,11 @@ export default async function FlowLanding() {
         >
           <RepelDotGrid />
           <div className="relative z-10 mx-auto w-full max-w-6xl px-6 py-16 sm:py-20">
+            <AccountBar
+              initialEmail={session?.email ?? null}
+              initialFlows={flows}
+              initialPayoutAccount={payoutAccount}
+            />
             <div className="mx-auto max-w-lg text-center">
               <h1 className="font-heading text-balance text-[2.25rem] font-medium leading-[1.05] tracking-[-0.02em] text-ink sm:text-5xl">
                 Turn a sentence into a payment page.

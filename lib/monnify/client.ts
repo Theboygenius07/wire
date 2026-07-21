@@ -59,6 +59,8 @@ async function monnifyFetch(path: string, options: { method?: string; body?: unk
 
 // -- The six operations, matching the MCP tools in lib/monnify/tools.ts --
 
+export type IncomeSplitEntry = { subAccountCode: string; splitPercentage: number };
+
 export function createInvoice(input: {
   amount: number;
   invoiceReference: string;
@@ -68,6 +70,7 @@ export function createInvoice(input: {
   expiryDate: string; // "yyyy-MM-dd HH:mm:ss"
   currencyCode?: string;
   redirectUrl?: string;
+  incomeSplitConfig?: IncomeSplitEntry[];
 }) {
   return monnifyFetch("/api/v1/invoice/create", {
     method: "POST",
@@ -82,6 +85,7 @@ export function createReservedAccount(input: {
   customerName?: string;
   bvn?: string;
   getAllAvailableBanks?: boolean;
+  incomeSplitConfig?: IncomeSplitEntry[];
 }) {
   return monnifyFetch("/api/v2/bank-transfer/reserved-accounts", {
     method: "POST",
@@ -89,8 +93,57 @@ export function createReservedAccount(input: {
   });
 }
 
+// Sub-accounts + bank list verified live against the real sandbox account
+// (2026-07-21): GET /api/v1/sub-accounts and GET /api/v1/banks both returned
+// real data rather than a "feature not enabled" error, confirming
+// transaction splitting is already active here — Monnify's docs say this
+// normally needs explicit activation per account, so don't assume it's on
+// elsewhere. The incomeSplitConfig field on createInvoice/createReservedAccount
+// above is NOT independently verified against a real split payout — only
+// sub-account creation/listing were tested live.
+export function createSubAccount(input: {
+  bankCode: string;
+  accountNumber: string;
+  email: string;
+  defaultSplitPercentage: number;
+  currencyCode?: string;
+}): Promise<Array<{ subAccountCode: string; accountName?: string; bankName?: string }>> {
+  return monnifyFetch("/api/v1/sub-accounts", {
+    method: "POST",
+    body: [{ currencyCode: "NGN", ...input }],
+  });
+}
+
+export function listBanks(): Promise<Array<{ name: string; code: string }>> {
+  return monnifyFetch("/api/v1/banks");
+}
+
 export function verifyTransaction(input: { transactionReference: string }) {
   return monnifyFetch(`/api/v2/transactions/${encodeURIComponent(input.transactionReference)}`);
+}
+
+// Recurring billing (card tokenization): NOT independently verified live —
+// doing so requires a real card payment, which wasn't available to test in
+// this session. Endpoint path and body fields are copied from Monnify's docs
+// (developers.monnify.com/docs/collections/recurring-payments/card-tokenization).
+// The flow: a customer pays once by card via createInvoice, the webhook
+// re-queries that transaction with verifyTransaction to pull a cardToken out
+// of the response, and this function charges that token on a schedule with
+// no customer interaction. Confirm the cardToken field name in a real
+// verifyTransaction response before relying on this in production.
+export function chargeCardToken(input: {
+  cardToken: string;
+  amount: number;
+  customerName: string;
+  customerEmail: string;
+  paymentReference: string;
+  paymentDescription: string;
+  currencyCode?: string;
+}) {
+  return monnifyFetch("/api/v1/merchant/cards/charge-card-token", {
+    method: "POST",
+    body: { currencyCode: "NGN", contractCode: CONTRACT_CODE, apiKey: API_KEY, ...input },
+  });
 }
 
 export function getWalletBalance(input: { accountNumber?: string } = {}) {

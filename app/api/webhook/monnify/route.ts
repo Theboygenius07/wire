@@ -1,8 +1,10 @@
 import crypto from "crypto";
-import { recordSale, saveConnectedAction } from "@/lib/store/flow";
+import { recordSale, recordTierSale, saveConnectedAction } from "@/lib/store/flow";
 import { getSeller } from "@/lib/store/seller";
 import { getGateway, compileSpec } from "@/lib/gateway";
 import { runSellerAction } from "@/lib/openai/sellerAction";
+import { saveSubscription, addCycle } from "@/lib/store/subscription";
+import * as monnify from "@/lib/monnify/client";
 
 // Receives Monnify's payment-succeeded notifications and updates the
 // Flow dashboard. Verified against developers.monnify.com as of
@@ -63,9 +65,55 @@ export async function POST(request: Request) {
   }
 
   // `reference` is whatever we passed as accountReference/invoiceReference
-  // when creating the sale (app/api/flow/route.ts uses the same value —
-  // our Flow slug — for both), so it doubles as the lookup key.
-  const record = await recordSale(reference, amountPaid, transactionReference);
+  // when creating the sale. For single-price Flow pages (app/api/flow/route.ts)
+  // that's just the Flow slug. For a multi-tier page, a per-purchase invoice
+  // reference looks like "{slug}--{tierId}--{random}" (see
+  // app/api/flow/[slug]/purchase) — split it back apart to route the sale to
+  // the right tier.
+  const [flowSlug, tierId] = reference.includes("--") ? reference.split("--") : [reference, undefined];
+
+  const record = tierId
+    ? await recordTierSale(flowSlug, tierId, amountPaid, transactionReference)
+    : await recordSale(flowSlug, amountPaid, transactionReference);
+
+  // Recurring Flow: this is a subscriber's first (manually-paid) charge —
+  // pull their card token out of the transaction so future cycles can be
+  // billed automatically with no action from them. Best-effort and NOT
+  // independently verified against a real card payment — the field names
+  // below (cardDetails.cardToken, customer.email/name) are copied from
+  // Monnify's docs, not confirmed live; if a real subscriber signup doesn't
+  // produce a token, check the actual verifyTransaction response shape here.
+  if (record?.recurring && !tierId) {
+    try {
+      const txn = (await monnify.verifyTransaction({ transactionReference })) as {
+        cardDetails?: { cardToken?: string; token?: string };
+        cardToken?: string;
+        customer?: { email?: string; name?: string };
+        customerEmail?: string;
+        customerName?: string;
+      };
+      const cardToken = txn.cardDetails?.cardToken ?? txn.cardDetails?.token ?? txn.cardToken;
+      if (cardToken) {
+        await saveSubscription({
+          id: crypto.randomUUID(),
+          flowSlug,
+          cardToken,
+          customerEmail: txn.customer?.email ?? txn.customerEmail ?? `flow+${flowSlug}@wire.dev`,
+          customerName: txn.customer?.name ?? txn.customerName ?? record.title,
+          amountNaira: amountPaid,
+          frequency: record.recurring.frequency,
+          nextChargeAt: addCycle(new Date(), record.recurring.frequency).toISOString(),
+          status: "active",
+          failedAttempts: 0,
+          createdAt: new Date().toISOString(),
+        });
+      } else {
+        console.error("Recurring signup: no card token in verifyTransaction response for", transactionReference);
+      }
+    } catch (err) {
+      console.error("Failed to set up recurring subscription:", err);
+    }
+  }
 
   // Fan out to whatever system the seller connected via /connect, if any.
   // Best-effort: a failure here shouldn't turn into a non-2xx response,
@@ -80,7 +128,7 @@ export async function POST(request: Request) {
           `Sold "${record.title}" for ₦${amountPaid}.`,
           tools
         );
-        await saveConnectedAction(reference, summary);
+        await saveConnectedAction(flowSlug, summary);
       }
     } catch (err) {
       console.error("Connected-system action failed:", err);

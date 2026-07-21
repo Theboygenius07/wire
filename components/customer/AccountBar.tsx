@@ -3,7 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { AuthForm } from "@/components/auth/AuthForm";
+import { PayoutSetup } from "@/components/customer/PayoutSetup";
 import type { FlowRecord } from "@/lib/store/flow";
+import type { PayoutAccount } from "@/lib/store/payout";
 
 function formatNaira(amount: number): string {
   return `₦${amount.toLocaleString("en-NG")}`;
@@ -12,28 +14,33 @@ function formatNaira(amount: number): string {
 export function AccountBar({
   initialEmail,
   initialFlows,
+  initialPayoutAccount,
 }: {
   initialEmail: string | null;
   initialFlows: FlowRecord[];
+  initialPayoutAccount: PayoutAccount | null;
 }) {
   const [email, setEmail] = useState(initialEmail);
   const [flows, setFlows] = useState(initialFlows);
+  const [payoutAccount, setPayoutAccount] = useState(initialPayoutAccount);
   const [showAuth, setShowAuth] = useState(false);
 
-  async function refreshFlows() {
-    const res = await fetch("/api/flow/mine");
-    if (res.ok) setFlows((await res.json()).flows);
+  async function refresh() {
+    const [flowsRes, payoutRes] = await Promise.all([fetch("/api/flow/mine"), fetch("/api/payout")]);
+    if (flowsRes.ok) setFlows((await flowsRes.json()).flows);
+    if (payoutRes.ok) setPayoutAccount((await payoutRes.json()).account);
   }
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
     setEmail(null);
     setFlows([]);
+    setPayoutAccount(null);
   }
 
   if (!email) {
     return (
-      <div className="mx-auto max-w-6xl px-6 pt-6">
+      <div className="mb-8">
         {showAuth ? (
           <div className="flex justify-center">
             <AuthForm
@@ -42,7 +49,7 @@ export function AccountBar({
               onAuthed={(loggedInEmail) => {
                 setEmail(loggedInEmail);
                 setShowAuth(false);
-                refreshFlows();
+                refresh();
               }}
             />
           </div>
@@ -64,7 +71,7 @@ export function AccountBar({
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-6 pt-6">
+    <div id="account-bar" className="mb-8 scroll-mt-6">
       <div className="rounded-xl border border-line bg-white px-4 py-3">
         <div className="flex items-center justify-between">
           <p className="text-[13px] text-muted">
@@ -102,6 +109,8 @@ export function AccountBar({
             No sales pages yet — create one below and it&rsquo;ll show up here.
           </p>
         )}
+
+        <PayoutSetup initialAccount={payoutAccount} onSaved={setPayoutAccount} />
       </div>
     </div>
   );

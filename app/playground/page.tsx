@@ -1,11 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ProductHeader } from "@/components/product/ProductHeader";
-
-type FlowPage = { slug: string; title: string; checkoutUrl: string; dashboardUrl: string };
-
-const FLOW_HISTORY_KEY = "wire.flowHistory";
 
 type Operation = {
   name: string;
@@ -100,24 +96,6 @@ export default function PlaygroundPage() {
   const [trace, setTrace] = useState<TraceItem[]>([]);
   const [chatLoading, setChatLoading] = useState(false);
 
-  const [flowPrompt, setFlowPrompt] = useState("");
-  const [flowPages, setFlowPages] = useState<FlowPage[]>([]);
-  const [flowError, setFlowError] = useState<string | null>(null);
-  const [flowLoading, setFlowLoading] = useState(false);
-
-  // Every Flow page created this browser keeps showing up here — checkout/
-  // dashboard links open in a new tab specifically so navigating to one
-  // doesn't unmount this page and lose this list (or the gateway/chat state
-  // above it).
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(FLOW_HISTORY_KEY);
-      if (raw) setFlowPages(JSON.parse(raw));
-    } catch {
-      // Corrupt/unavailable localStorage — start with an empty history.
-    }
-  }, []);
-
   async function handleGenerateGateway() {
     setGatewayLoading(true);
     setGatewayError(null);
@@ -166,40 +144,9 @@ export default function PlaygroundPage() {
     }
   }
 
-  async function handleCreateFlow() {
-    if (!flowPrompt.trim()) return;
-    setFlowLoading(true);
-    setFlowError(null);
-    try {
-      const res = await fetch("/api/flow", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: flowPrompt }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Failed to create the payment page.");
-      const page: FlowPage = {
-        slug: data.slug,
-        title: data.record?.title ?? data.slug,
-        checkoutUrl: data.checkoutUrl,
-        dashboardUrl: data.dashboardUrl,
-      };
-      setFlowPages((pages) => {
-        const next = [page, ...pages];
-        localStorage.setItem(FLOW_HISTORY_KEY, JSON.stringify(next));
-        return next;
-      });
-      setFlowPrompt("");
-    } catch (err) {
-      setFlowError(err instanceof Error ? err.message : String(err));
-    } finally {
-      setFlowLoading(false);
-    }
-  }
-
   return (
     <>
-      <ProductHeader label="Playground" />
+      <ProductHeader label="Playground" back={{ href: "/relay", label: "Back to Relay" }} />
       <main className="mx-auto max-w-6xl flex-1 px-6 py-16">
         <div className="mb-14 max-w-xl">
           <p className="text-[12.5px] font-medium uppercase tracking-[0.08em] text-muted">Playground</p>
@@ -298,7 +245,7 @@ export default function PlaygroundPage() {
         </section>
 
         {/* 2. Live chat / trace */}
-        <section className="mb-16 border-t border-line pt-14">
+        <section className="border-t border-line pt-14">
           <h2 className="font-heading text-[22px] font-medium leading-snug tracking-tight text-ink">
             Watch an agent <span className="text-ink/40">actually use them.</span>
           </h2>
@@ -369,66 +316,6 @@ export default function PlaygroundPage() {
                 );
               })}
             </div>
-          </div>
-        </section>
-
-        {/* 3. Flow */}
-        <section className="border-t border-line pt-14">
-          <span className="text-[11px] font-semibold tracking-[0.1em] text-muted">FLOW</span>
-          <h2 className="font-heading mt-3 text-[22px] font-medium leading-snug tracking-tight text-ink">
-            One sentence, <span className="text-ink/40">one working product.</span>
-          </h2>
-          <div className="mt-5 overflow-hidden rounded-2xl border border-panel-line bg-dot-grid p-6 sm:p-8">
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <input
-                value={flowPrompt}
-                onChange={(e) => setFlowPrompt(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleCreateFlow()}
-                placeholder="Create a payment page for hackathon tickets, ₦5,000, cap 100"
-                className="flex-1 rounded-lg border border-line bg-white px-3 py-2.5 text-[13.5px] text-ink placeholder:text-muted focus:border-ink/30 focus:outline-none"
-              />
-              <button
-                onClick={handleCreateFlow}
-                disabled={flowLoading || !flowPrompt.trim()}
-                className="whitespace-nowrap rounded-md bg-accent px-5 py-2.5 text-[14px] font-semibold text-accent-ink transition-all duration-150 hover:scale-[1.02] hover:brightness-95 active:scale-[0.98] disabled:opacity-40 disabled:hover:scale-100"
-              >
-                {flowLoading ? "Building…" : "Create payment page"}
-              </button>
-            </div>
-
-            {flowError && <p className="mt-4 text-[13px] text-ink/70">{flowError}</p>}
-
-            {flowPages.length > 0 && (
-              <div className="mt-5 space-y-2">
-                {flowPages.map((page) => (
-                  <div
-                    key={page.slug}
-                    className="flex flex-wrap items-center gap-3 rounded-xl border border-line bg-white p-4"
-                  >
-                    <span className="h-1.5 w-1.5 rounded-full bg-accent" />
-                    <p className="text-[13.5px] text-ink">{page.title}</p>
-                    <div className="ml-auto flex gap-3">
-                      <a
-                        href={page.checkoutUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[13.5px] font-medium text-ink underline decoration-ink/25 underline-offset-4 hover:decoration-ink"
-                      >
-                        Checkout
-                      </a>
-                      <a
-                        href={page.dashboardUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[13.5px] font-medium text-ink underline decoration-ink/25 underline-offset-4 hover:decoration-ink"
-                      >
-                        Dashboard
-                      </a>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
         </section>
       </main>

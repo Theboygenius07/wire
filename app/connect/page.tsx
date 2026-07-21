@@ -94,7 +94,7 @@ export default function ConnectPage() {
     <div className="relative flex flex-1 flex-col">
       <RepelDotGrid />
       <div className="relative z-10 flex flex-1 flex-col">
-        <ProductHeader label="Connect your system" />
+        <ProductHeader label="Connect your system" back={{ href: "/flow", label: "Back to Flow" }} />
         <main className="mx-auto flex w-full max-w-6xl flex-1 items-center justify-center px-6 py-16">
           <div className="w-full max-w-lg">
             <div className="text-center">
