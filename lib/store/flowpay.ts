@@ -21,6 +21,9 @@ export type FlowPayRecord = {
   bankName?: string;
   checkoutUrl?: string;
   createdAt: string;
+  /** Monnify transactionReferences already applied — Monnify retries webhook
+   * delivery, so this is how recordSale avoids double-counting a retry. */
+  processedTransactionRefs?: string[];
 };
 
 async function readAll(): Promise<Record<string, FlowPayRecord>> {
@@ -49,10 +52,17 @@ export async function getFlowPay(slug: string) {
   return all[slug] ?? null;
 }
 
-export async function recordSale(slug: string, amountNaira: number) {
+export async function recordSale(slug: string, amountNaira: number, transactionReference: string) {
   const all = await readAll();
   const record = all[slug];
   if (!record) return null;
+
+  record.processedTransactionRefs ??= [];
+  if (record.processedTransactionRefs.includes(transactionReference)) {
+    return record; // Already applied — Monnify retried this notification.
+  }
+
+  record.processedTransactionRefs.push(transactionReference);
   record.ticketsSold += 1;
   record.revenueNaira += amountNaira;
   await writeAll(all);
