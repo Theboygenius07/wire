@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { ProductHeader } from "@/components/product/ProductHeader";
 import { RepelDotGrid } from "@/components/landing/RepelDotGrid";
-import type { FlowPayRecord } from "@/lib/store/flowpay";
+import type { FlowRecord } from "@/lib/store/flow";
 
 function formatNaira(amount: number): string {
   return `₦${amount.toLocaleString("en-NG")}`;
@@ -16,7 +16,7 @@ function formatDate(iso: string): string {
 
 export default function DashboardPage() {
   const { slug } = useParams<{ slug: string }>();
-  const [record, setRecord] = useState<FlowPayRecord | null>(null);
+  const [record, setRecord] = useState<FlowRecord | null>(null);
   const [notFound, setNotFound] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -25,7 +25,7 @@ export default function DashboardPage() {
 
     async function poll() {
       try {
-        const res = await fetch(`/api/flowpay/${slug}`);
+        const res = await fetch(`/api/flow/${slug}`);
         if (cancelled) return;
         if (res.status === 404) {
           setNotFound(true);
@@ -50,7 +50,7 @@ export default function DashboardPage() {
       <>
         <ProductHeader label="Dashboard" />
         <main className="mx-auto flex max-w-6xl flex-1 items-center justify-center px-6 py-16">
-          <p className="text-[14.5px] text-muted">No FlowPay page found for &ldquo;{slug}&rdquo;.</p>
+          <p className="text-[14.5px] text-muted">No Flow page found for &ldquo;{slug}&rdquo;.</p>
         </main>
       </>
     );

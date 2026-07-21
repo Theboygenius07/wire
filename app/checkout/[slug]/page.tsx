@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import QRCode from "qrcode";
-import { getFlowPay } from "@/lib/store/flowpay";
+import { getFlow } from "@/lib/store/flow";
 import { ProductHeader } from "@/components/product/ProductHeader";
 import { RepelDotGrid } from "@/components/landing/RepelDotGrid";
 
@@ -10,7 +10,7 @@ function formatNaira(amount: number): string {
 
 export default async function CheckoutPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const record = await getFlowPay(slug);
+  const record = await getFlow(slug);
   if (!record) notFound();
 
   const qrPayload =
@@ -28,7 +28,7 @@ export default async function CheckoutPage({ params }: { params: Promise<{ slug:
         <ProductHeader label="Checkout" />
         <main className="mx-auto flex w-full max-w-6xl flex-1 items-center justify-center px-6 py-16">
           <div className="w-full max-w-md overflow-hidden rounded-2xl border border-panel-line bg-white p-8">
-            <p className="text-[11px] font-semibold tracking-[0.1em] text-muted">FLOWPAY CHECKOUT</p>
+            <p className="text-[11px] font-semibold tracking-[0.1em] text-muted">FLOW CHECKOUT</p>
             <h1 className="font-heading mt-3 text-balance text-[28px] font-medium leading-snug tracking-tight text-ink">
               {record.title}
             </h1>

@@ -1,7 +1,7 @@
 const stats = [
   { value: "6", label: "Monnify operations wired end-to-end — not a demo stub" },
   { value: "2", label: "consumer surfaces on one gateway: a dev playground and a live product" },
-  { value: "1", label: "shared tool definition — the MCP server, the playground, and FlowPay all call the same handlers, so nothing drifts" },
+  { value: "1", label: "shared tool definition — the MCP server, the playground, and Flow all call the same handlers, so nothing drifts" },
 ];
 
 export function Stats() {

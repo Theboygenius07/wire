@@ -36,7 +36,7 @@ yarn-error.log*
 # vercel
 .vercel
 
-# runtime data (lib/store/flowpay.ts)
+# runtime data (lib/store/flow.ts)
 /data
 
 # typescript

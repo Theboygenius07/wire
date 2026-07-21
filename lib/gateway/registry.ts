@@ -5,7 +5,7 @@ import type { GatewaySpec } from "./types";
 // routes as separate serverless instances with no shared memory, so a
 // gateway generated on one instance would be invisible to a request that
 // lands on another. Redis is the one place every instance can reach.
-// Generated gateways are still disposable (unlike FlowPay records), so they
+// Generated gateways are still disposable (unlike Flow records), so they
 // carry a TTL rather than living forever.
 
 const redis = Redis.fromEnv();

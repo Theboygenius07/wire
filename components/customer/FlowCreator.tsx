@@ -4,13 +4,13 @@ import { useState } from "react";
 import Link from "next/link";
 import { getOrCreateSellerId } from "@/lib/seller/token";
 
-type FlowPayResult = { slug: string; checkoutUrl: string; dashboardUrl: string };
+type FlowResult = { slug: string; checkoutUrl: string; dashboardUrl: string };
 
-export function FlowPayCreator({ className }: { className?: string }) {
+export function FlowCreator({ className }: { className?: string }) {
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<FlowPayResult | null>(null);
+  const [result, setResult] = useState<FlowResult | null>(null);
   const [copied, setCopied] = useState(false);
 
   async function handleCreate() {
@@ -19,7 +19,7 @@ export function FlowPayCreator({ className }: { className?: string }) {
     setError(null);
     setResult(null);
     try {
-      const res = await fetch("/api/flowpay", {
+      const res = await fetch("/api/flow", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt, sellerId: getOrCreateSellerId() }),

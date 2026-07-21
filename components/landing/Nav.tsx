@@ -3,6 +3,7 @@ export function Nav() {
     { href: "#how-it-works", label: "How it works" },
     { href: "#features", label: "Product" },
     { href: "#proof", label: "Under the hood" },
+    { href: "/pricing", label: "Pricing" },
   ];
 
   return (

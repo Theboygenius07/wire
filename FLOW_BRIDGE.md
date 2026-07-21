@@ -1,8 +1,8 @@
-# FlowPay bridge — connect your own systems
+# Flow bridge — connect your own systems
 
 ## What this is
 
-Today, when someone pays through a FlowPay page, Monnify moves the money and
+Today, when someone pays through a Flow page, Monnify moves the money and
 the Wire dashboard updates. Nothing else does. If a seller tracks stock in a
 spreadsheet or logs sales for their books, they still do that by hand.
 
@@ -18,7 +18,7 @@ payment is confirmed.
 
 ## The flow
 
-1. **Silent identity, no signup.** The first time someone creates a FlowPay
+1. **Silent identity, no signup.** The first time someone creates a Flow
    page, they get a random token stored in a browser cookie. No email, no
    password, no new friction on the existing `/sell` flow. This token is
    their seller ID going forward.
@@ -65,7 +65,7 @@ in flight:**
   component, saving against the seller token
 - The "run seller's tools on a sale" function — a new function that calls
   the existing `runAgent`, just with a different system prompt and tool
-  list than FlowPay creation uses
+  list than Flow creation uses
 
 **Existing files — the one real integration point:**
 - `app/api/webhook/monnify/route.ts` needs one additional call after
@@ -74,7 +74,7 @@ in flight:**
   the file most likely to be mid-edit by whoever's actively working on
   webhook/payment logic, so it should land as a small, precise diff, not a
   drive-by rewrite of the file.
-- `FlowPayRecord` type (`lib/store/flowpay.ts`) needs one new optional
+- `FlowRecord` type (`lib/store/flow.ts`) needs one new optional
   field — something like `sellerId?: string` — so a sale can be traced back
   to whether its seller has a connected system.
 

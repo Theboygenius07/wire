@@ -1,8 +1,8 @@
 import { runAgent } from "@/lib/openai/agent";
 import { monnifyGatewayTools } from "@/lib/monnify/tools";
-import { saveFlowPay, type FlowPayRecord } from "@/lib/store/flowpay";
+import { saveFlow, type FlowRecord } from "@/lib/store/flow";
 
-// FlowPay: "Create a payment page for hackathon tickets, ₦5,000, cap 100" in,
+// Flow: "Create a payment page for hackathon tickets, ₦5,000, cap 100" in,
 // a live checkout link + dashboard out. Runs the same agent loop as
 // /api/chat, but with a fixed system prompt that forces the create-account +
 // create-invoice sequence and demands a single JSON answer at the end.
@@ -14,8 +14,8 @@ export const runtime = "nodejs";
 // the reference/email must be unique per call — generated here, not invented
 // by the model, since an LLM is not a reliable source of uniqueness.
 function buildSystemPrompt(reference: string): string {
-  const email = `flowpay+${reference}@wire.dev`;
-  return `You are FlowPay, an agent that turns one plain-English sales request into a live Monnify payment page.
+  const email = `flow+${reference}@wire.dev`;
+  return `You are Flow, an agent that turns one plain-English sales request into a live Monnify payment page.
 
 Given the user's request:
 1. Extract a short title, the price in NGN, and the sales cap (if the user doesn't give a cap, use 100).
@@ -61,7 +61,7 @@ export async function POST(request: Request) {
     return Response.json({ error: "The agent's final answer wasn't valid JSON.", raw: lastText.text }, { status: 502 });
   }
 
-  const record: FlowPayRecord = {
+  const record: FlowRecord = {
     slug,
     title: String(parsed.title ?? "Untitled sale"),
     priceNaira: Number(parsed.priceNaira ?? 0),
@@ -76,7 +76,7 @@ export async function POST(request: Request) {
     sellerId: body.sellerId,
   };
 
-  await saveFlowPay(record);
+  await saveFlow(record);
 
   return Response.json({
     slug,

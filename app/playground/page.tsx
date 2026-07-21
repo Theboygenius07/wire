@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import { ProductHeader } from "@/components/product/ProductHeader";
 
-type FlowPayPage = { slug: string; title: string; checkoutUrl: string; dashboardUrl: string };
+type FlowPage = { slug: string; title: string; checkoutUrl: string; dashboardUrl: string };
 
-const FLOWPAY_HISTORY_KEY = "wire.flowpayHistory";
+const FLOW_HISTORY_KEY = "wire.flowHistory";
 
 type Operation = {
   name: string;
@@ -100,19 +100,19 @@ export default function PlaygroundPage() {
   const [trace, setTrace] = useState<TraceItem[]>([]);
   const [chatLoading, setChatLoading] = useState(false);
 
-  const [flowpayPrompt, setFlowpayPrompt] = useState("");
-  const [flowpayPages, setFlowpayPages] = useState<FlowPayPage[]>([]);
-  const [flowpayError, setFlowpayError] = useState<string | null>(null);
-  const [flowpayLoading, setFlowpayLoading] = useState(false);
+  const [flowPrompt, setFlowPrompt] = useState("");
+  const [flowPages, setFlowPages] = useState<FlowPage[]>([]);
+  const [flowError, setFlowError] = useState<string | null>(null);
+  const [flowLoading, setFlowLoading] = useState(false);
 
-  // Every FlowPay page created this browser keeps showing up here — checkout/
+  // Every Flow page created this browser keeps showing up here — checkout/
   // dashboard links open in a new tab specifically so navigating to one
   // doesn't unmount this page and lose this list (or the gateway/chat state
   // above it).
   useEffect(() => {
     try {
-      const raw = localStorage.getItem(FLOWPAY_HISTORY_KEY);
-      if (raw) setFlowpayPages(JSON.parse(raw));
+      const raw = localStorage.getItem(FLOW_HISTORY_KEY);
+      if (raw) setFlowPages(JSON.parse(raw));
     } catch {
       // Corrupt/unavailable localStorage — start with an empty history.
     }
@@ -166,34 +166,34 @@ export default function PlaygroundPage() {
     }
   }
 
-  async function handleCreateFlowPay() {
-    if (!flowpayPrompt.trim()) return;
-    setFlowpayLoading(true);
-    setFlowpayError(null);
+  async function handleCreateFlow() {
+    if (!flowPrompt.trim()) return;
+    setFlowLoading(true);
+    setFlowError(null);
     try {
-      const res = await fetch("/api/flowpay", {
+      const res = await fetch("/api/flow", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: flowpayPrompt }),
+        body: JSON.stringify({ prompt: flowPrompt }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed to create the payment page.");
-      const page: FlowPayPage = {
+      const page: FlowPage = {
         slug: data.slug,
         title: data.record?.title ?? data.slug,
         checkoutUrl: data.checkoutUrl,
         dashboardUrl: data.dashboardUrl,
       };
-      setFlowpayPages((pages) => {
+      setFlowPages((pages) => {
         const next = [page, ...pages];
-        localStorage.setItem(FLOWPAY_HISTORY_KEY, JSON.stringify(next));
+        localStorage.setItem(FLOW_HISTORY_KEY, JSON.stringify(next));
         return next;
       });
-      setFlowpayPrompt("");
+      setFlowPrompt("");
     } catch (err) {
-      setFlowpayError(err instanceof Error ? err.message : String(err));
+      setFlowError(err instanceof Error ? err.message : String(err));
     } finally {
-      setFlowpayLoading(false);
+      setFlowLoading(false);
     }
   }
 
@@ -372,35 +372,35 @@ export default function PlaygroundPage() {
           </div>
         </section>
 
-        {/* 3. FlowPay */}
+        {/* 3. Flow */}
         <section className="border-t border-line pt-14">
-          <span className="text-[11px] font-semibold tracking-[0.1em] text-muted">FLOWPAY</span>
+          <span className="text-[11px] font-semibold tracking-[0.1em] text-muted">FLOW</span>
           <h2 className="font-heading mt-3 text-[22px] font-medium leading-snug tracking-tight text-ink">
             One sentence, <span className="text-ink/40">one working product.</span>
           </h2>
           <div className="mt-5 overflow-hidden rounded-2xl border border-panel-line bg-dot-grid p-6 sm:p-8">
             <div className="flex flex-col gap-3 sm:flex-row">
               <input
-                value={flowpayPrompt}
-                onChange={(e) => setFlowpayPrompt(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleCreateFlowPay()}
+                value={flowPrompt}
+                onChange={(e) => setFlowPrompt(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleCreateFlow()}
                 placeholder="Create a payment page for hackathon tickets, ₦5,000, cap 100"
                 className="flex-1 rounded-lg border border-line bg-white px-3 py-2.5 text-[13.5px] text-ink placeholder:text-muted focus:border-ink/30 focus:outline-none"
               />
               <button
-                onClick={handleCreateFlowPay}
-                disabled={flowpayLoading || !flowpayPrompt.trim()}
+                onClick={handleCreateFlow}
+                disabled={flowLoading || !flowPrompt.trim()}
                 className="whitespace-nowrap rounded-md bg-accent px-5 py-2.5 text-[14px] font-semibold text-accent-ink transition-all duration-150 hover:scale-[1.02] hover:brightness-95 active:scale-[0.98] disabled:opacity-40 disabled:hover:scale-100"
               >
-                {flowpayLoading ? "Building…" : "Create payment page"}
+                {flowLoading ? "Building…" : "Create payment page"}
               </button>
             </div>
 
-            {flowpayError && <p className="mt-4 text-[13px] text-ink/70">{flowpayError}</p>}
+            {flowError && <p className="mt-4 text-[13px] text-ink/70">{flowError}</p>}
 
-            {flowpayPages.length > 0 && (
+            {flowPages.length > 0 && (
               <div className="mt-5 space-y-2">
-                {flowpayPages.map((page) => (
+                {flowPages.map((page) => (
                   <div
                     key={page.slug}
                     className="flex flex-wrap items-center gap-3 rounded-xl border border-line bg-white p-4"

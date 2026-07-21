@@ -66,7 +66,7 @@ export function Features() {
         <RepelDotGrid />
         <div className="relative z-10 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="max-w-xl">
-            <span className="text-[11px] font-semibold tracking-[0.1em] text-muted">FLOWPAY</span>
+            <span className="text-[11px] font-semibold tracking-[0.1em] text-muted">FLOW</span>
             <h3 className="font-heading mt-3 text-[22px] font-medium leading-snug tracking-tight text-ink">
               One sentence, <span className="text-ink/40">one working product.</span>
             </h3>

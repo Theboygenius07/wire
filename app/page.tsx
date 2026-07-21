@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { RepelDotGrid } from "@/components/landing/RepelDotGrid";
-import { FlowPayCreator } from "@/components/customer/FlowPayCreator";
+import { FlowCreator } from "@/components/customer/FlowCreator";
 import { Footer } from "@/components/landing/Footer";
 
 const steps = [
@@ -40,6 +40,13 @@ function CustomerNav() {
             How it works
             <span className="absolute -bottom-1 left-0 h-px w-0 bg-ink transition-all duration-200 group-hover:w-full" />
           </a>
+          <Link
+            href="/pricing"
+            className="group relative text-[14.5px] font-medium text-ink/70 transition-colors hover:text-ink"
+          >
+            Pricing
+            <span className="absolute -bottom-1 left-0 h-px w-0 bg-ink transition-all duration-200 group-hover:w-full" />
+          </Link>
         </nav>
 
         <div className="flex items-center gap-5">
@@ -81,7 +88,7 @@ export default function Home() {
                 dashboard. Powered by Monnify. Wire never holds your money.
               </p>
 
-              <FlowPayCreator className="mt-8 text-left" />
+              <FlowCreator className="mt-8 text-left" />
 
               <div className="mt-6 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[13px] text-muted">
                 <span className="flex items-center gap-1.5">

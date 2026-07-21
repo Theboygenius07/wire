@@ -4,7 +4,7 @@ import type { GatewayTool } from "../gateway/types";
 
 // Single source of truth for "Monnify as MCP tools". Both the real MCP server
 // (lib/mcp/server.ts, for Claude Desktop / Cursor) and the in-app Playground /
-// FlowPay orchestrator (which talk to OpenAI directly) register tools from
+// Flow orchestrator (which talk to OpenAI directly) register tools from
 // this list, so there's exactly one place that defines what an agent can do.
 
 export const monnifyTools = [

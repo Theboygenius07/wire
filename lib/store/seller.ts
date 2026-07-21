@@ -1,8 +1,8 @@
 import { Redis } from "@upstash/redis";
 
 // Ties a seller's browser-cookie token to a connected gateway (their own
-// inventory/bookkeeping/whatever system) — separate from FlowPay records,
-// since one seller can create multiple FlowPay pages against the same
+// inventory/bookkeeping/whatever system) — separate from Flow records,
+// since one seller can create multiple Flow pages against the same
 // connected system.
 
 const redis = Redis.fromEnv();
