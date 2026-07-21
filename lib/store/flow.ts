@@ -46,9 +46,26 @@ function key(slug: string): string {
   return `flowpay:${slug}`;
 }
 
+function userFlowsKey(userId: string): string {
+  return `user-flows:${userId}`;
+}
+
 export async function saveFlow(record: FlowRecord) {
   await redis.set(key(record.slug), record);
+  if (record.userId) await redis.sadd(userFlowsKey(record.userId), record.slug);
   return record;
+}
+
+/** All Flow pages owned by a user, newest first. Backed by a Redis set kept
+ * in sync by saveFlow and claimFlow — records themselves only carry userId,
+ * not a reverse index, so this is the only way to list "my sales pages". */
+export async function getFlowsByUser(userId: string): Promise<FlowRecord[]> {
+  const slugs = await redis.smembers(userFlowsKey(userId));
+  if (!slugs.length) return [];
+  const records = await Promise.all(slugs.map((slug) => getFlow(slug)));
+  return records
+    .filter((r): r is FlowRecord => r !== null)
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 }
 
 export async function getFlow(slug: string) {
@@ -64,6 +81,7 @@ export async function claimFlow(slug: string, userId: string): Promise<FlowRecor
   if (!record.userId) {
     record.userId = userId;
     await redis.set(key(slug), record);
+    await redis.sadd(userFlowsKey(userId), slug);
   }
   return record;
 }

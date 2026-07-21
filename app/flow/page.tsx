@@ -3,7 +3,10 @@ import Link from "next/link";
 import { Nav } from "@/components/landing/Nav";
 import { RepelDotGrid } from "@/components/landing/RepelDotGrid";
 import { FlowCreator } from "@/components/customer/FlowCreator";
+import { AccountBar } from "@/components/customer/AccountBar";
 import { Footer } from "@/components/landing/Footer";
+import { getCurrentSession } from "@/lib/auth/session";
+import { getFlowsByUser } from "@/lib/store/flow";
 
 export const metadata: Metadata = {
   title: "Flow — Turn a sentence into a payment page.",
@@ -29,10 +32,14 @@ const steps = [
   },
 ];
 
-export default function FlowLanding() {
+export default async function FlowLanding() {
+  const session = await getCurrentSession();
+  const flows = session ? await getFlowsByUser(session.userId) : [];
+
   return (
     <>
       <Nav />
+      <AccountBar initialEmail={session?.email ?? null} initialFlows={flows} />
       <main className="flex-1">
         <section
           id="top-form"

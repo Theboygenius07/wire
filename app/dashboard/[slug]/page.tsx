@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { ProductHeader } from "@/components/product/ProductHeader";
 import { RepelDotGrid } from "@/components/landing/RepelDotGrid";
+import { AuthForm } from "@/components/auth/AuthForm";
 import type { FlowRecord } from "@/lib/store/flow";
 
 type Status = "loading" | "needsLogin" | "forbidden" | "notFound" | "ready";
@@ -14,85 +15,6 @@ function formatNaira(amount: number): string {
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-}
-
-function LoginGate({ onAuthed }: { onAuthed: (email: string) => void }) {
-  const [mode, setMode] = useState<"login" | "signup">("login");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  async function submit() {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch(`/api/auth/${mode}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Something went wrong.");
-      onAuthed(data.email);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  return (
-    <main className="mx-auto flex max-w-6xl flex-1 items-center justify-center px-6 py-16">
-      <div className="w-full max-w-sm rounded-2xl border border-panel-line bg-dot-grid p-8">
-        <p className="text-[11px] font-semibold tracking-[0.1em] text-muted">DASHBOARD ACCESS</p>
-        <h1 className="font-heading mt-3 text-[22px] font-medium leading-snug tracking-tight text-ink">
-          {mode === "login" ? "Log in to view this dashboard." : "Create an account to view this dashboard."}
-        </h1>
-        <p className="mt-2 text-[13.5px] leading-relaxed text-muted">
-          Anyone can create a payment link — you just need an account to see the sales dashboard for one.
-        </p>
-
-        <div className="mt-6 space-y-3">
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="you@example.com"
-            className="w-full rounded-lg border border-line bg-white px-3 py-2.5 text-[13.5px] text-ink placeholder:text-muted focus:border-ink/30 focus:outline-none"
-          />
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && submit()}
-            placeholder={mode === "signup" ? "At least 8 characters" : "Password"}
-            className="w-full rounded-lg border border-line bg-white px-3 py-2.5 text-[13.5px] text-ink placeholder:text-muted focus:border-ink/30 focus:outline-none"
-          />
-        </div>
-
-        {error && <p className="mt-3 text-[13px] text-ink/70">{error}</p>}
-
-        <button
-          onClick={submit}
-          disabled={loading || !email || !password}
-          className="mt-5 w-full rounded-md bg-accent px-5 py-2.5 text-[14px] font-semibold text-accent-ink transition-all duration-150 hover:scale-[1.02] hover:brightness-95 active:scale-[0.98] disabled:opacity-40 disabled:hover:scale-100"
-        >
-          {loading ? "Working…" : mode === "login" ? "Log in" : "Create account"}
-        </button>
-
-        <button
-          onClick={() => {
-            setMode(mode === "login" ? "signup" : "login");
-            setError(null);
-          }}
-          className="mt-4 block w-full text-center text-[13px] font-medium text-ink underline decoration-ink/25 underline-offset-4 hover:decoration-ink"
-        >
-          {mode === "login" ? "Need an account? Sign up" : "Already have an account? Log in"}
-        </button>
-      </div>
-    </main>
-  );
 }
 
 export default function DashboardPage() {
@@ -167,12 +89,16 @@ export default function DashboardPage() {
     return (
       <>
         <ProductHeader label="Dashboard" />
-        <LoginGate
-          onAuthed={(loggedInEmail) => {
-            setEmail(loggedInEmail);
-            setStatus("loading");
-          }}
-        />
+        <main className="mx-auto flex max-w-6xl flex-1 items-center justify-center px-6 py-16">
+          <AuthForm
+            title="Log in to view this dashboard."
+            subtitle="Anyone can create a payment link — you just need an account to see the sales dashboard for one."
+            onAuthed={(loggedInEmail) => {
+              setEmail(loggedInEmail);
+              setStatus("loading");
+            }}
+          />
+        </main>
       </>
     );
   }
