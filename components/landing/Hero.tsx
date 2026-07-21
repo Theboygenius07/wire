@@ -22,7 +22,7 @@ export function Hero() {
 
           <p data-hero-copy className="mt-6 max-w-xl text-pretty text-[17px] leading-relaxed">
             <span className="font-medium text-ink">
-              Wire turns any REST API into real MCP tools — automatically.
+              Relay turns any REST API into real MCP tools — automatically.
             </span>{" "}
             <span className="text-muted">
               One sentence becomes a working checkout, and every sale

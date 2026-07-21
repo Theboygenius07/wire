@@ -6,7 +6,7 @@ const features = [
     tag: "GATEWAY",
     title: "Paste an API.",
     titleMuted: "Get real MCP tools.",
-    body: "Wire parses an OpenAPI spec or a raw curl command and generates a working MCP server — typed schemas, real handlers, downloadable mcp.json. Point any MCP-compatible agent at it directly.",
+    body: "Relay parses an OpenAPI spec or a raw curl command and generates a working MCP server — typed schemas, real handlers, downloadable mcp.json. Point any MCP-compatible agent at it directly.",
     chip: "mcp.json →",
   },
   {

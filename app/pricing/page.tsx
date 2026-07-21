@@ -7,7 +7,7 @@ import { RepelDotGrid } from "@/components/landing/RepelDotGrid";
 
 export const metadata: Metadata = {
   title: "Pricing — Wire",
-  description: "Flow charges a per-sale fee, nothing up front. Wire's gateway is usage-based for developers building their own agents.",
+  description: "Flow charges a per-sale fee, nothing up front. Relay's gateway is usage-based for developers building their own agents.",
 };
 
 const tiers = [
@@ -49,7 +49,7 @@ const details = [
   {
     n: "02",
     title: "Flow bills separately",
-    body: "Selling through Flow never touches a Wire gateway bill — it's a percentage of what you sell, not a call count.",
+    body: "Selling through Flow never touches a Relay gateway bill — it's a percentage of what you sell, not a call count.",
   },
   {
     n: "03",
@@ -89,7 +89,7 @@ export default function PricingPage() {
                 </p>
                 <div className="mt-7 flex flex-wrap items-center gap-4">
                   <Link
-                    href="/"
+                    href="/flow"
                     className="rounded-md bg-accent px-7 py-3 text-[14px] font-semibold text-accent-ink transition-all duration-150 hover:scale-[1.02] hover:brightness-95 active:scale-[0.98]"
                   >
                     Create a Flow page
@@ -118,7 +118,7 @@ export default function PricingPage() {
               Prefer to work with the APIs directly?
             </h2>
             <p className="mt-3 max-w-lg text-[14.5px] leading-relaxed text-muted">
-              Wire&rsquo;s gateway is usage-based too — pay per tool call once you&rsquo;re past
+              Relay&rsquo;s gateway is usage-based too — pay per tool call once you&rsquo;re past
               the free tier, the same way the agents calling it get billed for tokens.
             </p>
 

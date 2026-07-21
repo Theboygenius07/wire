@@ -1,8 +1,7 @@
 export function Nav() {
   const links = [
-    { href: "#how-it-works", label: "How it works" },
-    { href: "#features", label: "Product" },
-    { href: "#proof", label: "Under the hood" },
+    { href: "/flow", label: "Flow" },
+    { href: "/relay", label: "Relay" },
     { href: "/pricing", label: "Pricing" },
   ];
 
@@ -37,10 +36,10 @@ export function Nav() {
             View source
           </a>
           <a
-            href="#cta"
+            href="/playground"
             className="rounded-lg bg-accent px-4 py-2.5 text-[14px] font-semibold text-accent-ink transition-all duration-150 hover:scale-[1.02] hover:brightness-95 active:scale-[0.98]"
           >
-            See it work
+            Open playground
           </a>
         </div>
       </div>

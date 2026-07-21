@@ -29,7 +29,7 @@ export function CallToAction() {
           </a>
         </div>
         <a
-          href="/"
+          href="/flow"
           className="relative z-10 mt-8 inline-block text-[13.5px] font-medium text-background/50 underline decoration-background/25 underline-offset-4 transition-colors hover:text-background/80 hover:decoration-background/60"
         >
           Looking to sell something instead? &rarr;
