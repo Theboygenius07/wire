@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ProductHeader } from "@/components/product/ProductHeader";
 import { RepelDotGrid } from "@/components/landing/RepelDotGrid";
 import { AuthForm } from "@/components/auth/AuthForm";
+import { FlowEditChat } from "@/components/customer/FlowEditChat";
 import type { FlowRecord } from "@/lib/store/flow";
 
 type Status = "loading" | "needsLogin" | "forbidden" | "notFound" | "ready";
@@ -35,21 +36,24 @@ export default function DashboardPage() {
       .catch(() => {});
   }, []);
 
+  async function refetch() {
+    try {
+      const res = await fetch(`/api/flow/${slug}`);
+      if (res.status === 404) return setStatus("notFound");
+      if (res.status === 401) return setStatus("needsLogin");
+      if (res.status === 403) return setStatus("forbidden");
+      setRecord(await res.json());
+      setStatus("ready");
+    } catch {
+      // Transient network error — next poll will retry.
+    }
+  }
+
   useEffect(() => {
     let cancelled = false;
 
     async function poll() {
-      try {
-        const res = await fetch(`/api/flow/${slug}`);
-        if (cancelled) return;
-        if (res.status === 404) return setStatus("notFound");
-        if (res.status === 401) return setStatus("needsLogin");
-        if (res.status === 403) return setStatus("forbidden");
-        setRecord(await res.json());
-        setStatus("ready");
-      } catch {
-        // Transient network error — next poll will retry.
-      }
+      if (!cancelled) await refetch();
     }
 
     poll();
@@ -58,6 +62,7 @@ export default function DashboardPage() {
       cancelled = true;
       clearInterval(interval);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug]);
 
   async function logout() {
@@ -237,7 +242,7 @@ export default function DashboardPage() {
                 <ul className="mt-2 space-y-2.5">
                   {record.tiers.map((tier) => (
                     <li key={tier.id} className="flex items-center justify-between gap-2">
-                      <p className="truncate text-[13.5px] text-ink">{tier.name}</p>
+                      <p className="min-w-0 flex-1 truncate text-[13.5px] text-ink">{tier.name}</p>
                       <p className="shrink-0 font-mono text-[12.5px] text-muted">
                         {formatNaira(tier.priceNaira)} · {tier.sold}/{tier.cap}
                       </p>
@@ -280,7 +285,7 @@ export default function DashboardPage() {
               <div className="border-t border-line pt-5">
                 <p className="text-[12px] text-muted">Checkout link</p>
                 <div className="mt-2 flex items-center gap-2">
-                  <p className="flex-1 truncate font-mono text-[12.5px] text-ink">
+                  <p className="min-w-0 flex-1 truncate font-mono text-[12.5px] text-ink">
                     {record.checkoutUrl}
                   </p>
                   <button
@@ -295,6 +300,12 @@ export default function DashboardPage() {
             )}
           </div>
         </div>
+
+        {record && (
+          <div className="mt-8 sm:mt-10">
+            <FlowEditChat slug={slug} onEdited={refetch} />
+          </div>
+        )}
         </div>
       </main>
     </>

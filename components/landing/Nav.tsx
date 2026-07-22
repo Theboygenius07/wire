@@ -32,12 +32,6 @@ export function Nav() {
 
         <div className="flex items-center gap-5">
           <a
-            href="#" // TODO: point at the repo once it's pushed
-            className="hidden text-[14.5px] font-medium text-ink/70 transition-colors hover:text-ink sm:block"
-          >
-            View source
-          </a>
-          <a
             href="/playground"
             className="rounded-lg bg-accent px-4 py-2.5 text-[14px] font-semibold text-accent-ink transition-all duration-150 hover:scale-[1.02] hover:brightness-95 active:scale-[0.98]"
           >

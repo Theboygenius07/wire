@@ -10,6 +10,7 @@ import { getCurrentSession } from "@/lib/auth/session";
 import { getFlowsByUser, claimFlowsBySeller } from "@/lib/store/flow";
 import { getPayoutAccount } from "@/lib/store/payout";
 import { withSocial } from "@/lib/metadata";
+import { getWhatsAppLink } from "@/lib/whatsapp/link";
 
 export const metadata: Metadata = withSocial({
   title: "Flow — Turn a sentence into a payment page.",
@@ -37,6 +38,7 @@ const steps = [
 
 export default async function FlowLanding() {
   const session = await getCurrentSession();
+  const whatsapp = getWhatsAppLink();
 
   if (session) {
     const sellerId = (await cookies()).get("wire_seller_id")?.value;
@@ -102,6 +104,21 @@ export default async function FlowLanding() {
                   Open the developer platform
                 </Link>
               </p>
+              {whatsapp && (
+                <p className="mt-2 text-[12.5px] text-muted">
+                  Prefer WhatsApp?{" "}
+                  <a
+                    href={whatsapp.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-medium text-ink underline decoration-ink/25 underline-offset-4 hover:decoration-ink"
+                  >
+                    Message Flow on WhatsApp
+                  </a>
+                  {whatsapp.isSandbox &&
+                    " — send the join code that's prefilled, then just tell it what you're selling."}
+                </p>
+              )}
             </div>
           </div>
         </section>

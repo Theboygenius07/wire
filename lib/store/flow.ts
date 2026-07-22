@@ -193,3 +193,17 @@ export async function saveConnectedAction(slug: string, summary: string) {
   await redis.set(key(slug), record);
   return record;
 }
+
+/** Read-modify-write patch for seller-initiated edits (see lib/flow/edit.ts)
+ * — title/price/cap/checkoutUrl/tiers only; slug/userId/sellerId never
+ * change, so no index needs updating. */
+export async function updateFlow(
+  slug: string,
+  patch: Partial<Pick<FlowRecord, "title" | "priceNaira" | "ticketCap" | "checkoutUrl" | "tiers">>
+): Promise<FlowRecord | null> {
+  const record = await getFlow(slug);
+  if (!record) return null;
+  Object.assign(record, patch);
+  await redis.set(key(slug), record);
+  return record;
+}

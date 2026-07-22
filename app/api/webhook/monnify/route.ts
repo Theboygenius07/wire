@@ -69,8 +69,13 @@ export async function POST(request: Request) {
   // that's just the Flow slug. For a multi-tier page, a per-purchase invoice
   // reference looks like "{slug}--{tierId}--{random}" (see
   // app/api/flow/[slug]/purchase) — split it back apart to route the sale to
-  // the right tier.
-  const [flowSlug, tierId] = reference.includes("--") ? reference.split("--") : [reference, undefined];
+  // the right tier. A regenerated single-price/recurring invoice (see
+  // lib/flow/edit.ts, after a price edit) uses "{slug}~{random}" instead —
+  // deliberately a different separator so it doesn't get mistaken for a tier
+  // reference here.
+  const [flowSlug, tierId] = reference.includes("--")
+    ? reference.split("--")
+    : [reference.includes("~") ? reference.split("~")[0] : reference, undefined];
 
   const record = tierId
     ? await recordTierSale(flowSlug, tierId, amountPaid, transactionReference)

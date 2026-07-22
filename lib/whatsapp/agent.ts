@@ -2,6 +2,8 @@ import { z } from "zod";
 import { runAgent, type TraceStep } from "@/lib/openai/agent";
 import { monnifyGatewayTools } from "@/lib/monnify/tools";
 import { createFlowFromPrompt } from "@/lib/flow/create";
+import { applyFlowEdit, type FlowEditPatch } from "@/lib/flow/edit";
+import { summarizeFlow } from "@/lib/flow/summarize";
 import type { FlowRecord } from "@/lib/store/flow";
 import type { GatewayTool } from "@/lib/gateway/types";
 
@@ -14,36 +16,23 @@ import type { GatewayTool } from "@/lib/gateway/types";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
-function summarizeFlow(flow: FlowRecord): string {
-  const lines = [
-    `- slug: ${flow.slug} — "${flow.title}"`,
-    flow.tiers
-      ? `  tiers: ${flow.tiers.map((t) => `${t.name} ₦${t.priceNaira} (${t.sold}/${t.cap} sold)`).join(", ")}`
-      : `  price: ₦${flow.priceNaira}, ${flow.ticketsSold}/${flow.ticketCap} sold`,
-    `  revenue so far: ₦${flow.revenueNaira}`,
-  ];
-  if (flow.lastConnectedAction) lines.push(`  last connected-system action: ${flow.lastConnectedAction}`);
-  const recentRefs = flow.processedTransactionRefs?.slice(-3);
-  if (recentRefs?.length) lines.push(`  recent transactionReferences (most recent last): ${recentRefs.join(", ")}`);
-  return lines.join("\n");
-}
-
 function buildSystemPrompt(flows: FlowRecord[]): string {
   const ownedSection = flows.length
     ? `This sender already owns these Flow pages:\n${flows.map(summarizeFlow).join("\n")}`
     : "This sender doesn't own any Flow pages yet.";
 
-  return `You are Flow, replying to a WhatsApp conversation. Someone can message you to create a payment page ("sell tickets, ₦5,000, cap 100") or to check on / act on one they already have ("how's my sale doing", "refund the last one").
+  return `You are Flow, replying to a WhatsApp conversation. Someone can message you to create a payment page ("sell tickets, ₦5,000, cap 100"), check on / act on one they already have ("how's my sale doing", "refund the last one"), or edit one ("change the price to ₦7,000", "bump the cap to 200", "raise VIP to ₦12,000").
 
 ${ownedSection}
 
 Decide, for this message:
 - If it describes a NEW sale (a price and what's being sold, not referring to something above) — call create_flow with the sender's raw request text as the "prompt" argument. Do this even if they already own other Flows; a new request means a new page, not editing an old one.
-- If it refers to something already listed above (a status check, a refund, "the last one") — answer directly from the data already given above where possible (ticketsSold/ticketCap/revenueNaira/lastConnectedAction already tell you "how's my sale doing"). Only call initiate_refund when they explicitly ask for a refund, using the most recent transactionReference listed for that Flow.
+- If it asks to CHANGE something about a Flow already listed above (price, cap, title, or a tier's price/cap/name) — call edit_flow with that Flow's slug and only the fields that are changing. For a tiered Flow, match the tier by name to find its id (shown above) and set tierId/tierPriceNaira/tierCap/tierName instead of the top-level priceNaira/ticketCap fields.
+- If it refers to something already listed above without asking to change it (a status check, a refund, "the last one") — answer directly from the data already given above where possible (ticketsSold/ticketCap/revenueNaira/lastConnectedAction already tell you "how's my sale doing"). Only call initiate_refund when they explicitly ask for a refund, using the most recent transactionReference listed for that Flow.
 - Never call create_invoice or create_reserved_account directly — always go through create_flow for anything that creates a new payment page; those two are only for internal use by create_flow itself.
 - If the request is ambiguous (e.g. they own several Flows and it's unclear which one they mean), ask a short clarifying question instead of guessing.
 
-Reply with ONLY the plain-text message to send back over WhatsApp — no JSON, no markdown code fences, no headers. Keep it short and conversational, in the same tone as "Sold 12/100 so far, ₦60,000 in." When a new Flow is created, include its checkout link and mention a QR code is coming separately.`;
+Reply with ONLY the plain-text message to send back over WhatsApp — no JSON, no markdown code fences, no headers. Keep it short and conversational, in the same tone as "Sold 12/100 so far, ₦60,000 in." When a new Flow is created, include its checkout link and mention a QR code is coming separately. When an edit succeeds, confirm briefly what changed.`;
 }
 
 export type WhatsAppAgentResult = {
@@ -69,7 +58,46 @@ export async function runWhatsAppAgent(
     handler: (args) => createFlowForSeller(args, sellerId),
   };
 
-  const tools: GatewayTool[] = [createFlowTool, ...monnifyGatewayTools.filter((t) => t.name === "initiate_refund")];
+  const editFlowTool: GatewayTool = {
+    name: "edit_flow",
+    description:
+      "Change an existing Flow's title, price, or ticket cap — or a specific tier's price/cap/name for a tiered Flow.",
+    schema: {
+      slug: z.string().describe("The slug of the Flow to edit, from the list above"),
+      title: z.string().optional().describe("New title"),
+      priceNaira: z.number().positive().optional().describe("New price in NGN — only for a Flow without tiers"),
+      ticketCap: z.number().int().positive().optional().describe("New sales cap — only for a Flow without tiers"),
+      tierId: z.string().optional().describe("For a tiered Flow: which tier (id, shown above) to edit"),
+      tierPriceNaira: z.number().positive().optional().describe("New price for that tier"),
+      tierCap: z.number().int().positive().optional().describe("New cap for that tier"),
+      tierName: z.string().optional().describe("New name for that tier"),
+    },
+    handler: (args) => {
+      const patch: FlowEditPatch = {
+        title: typeof args.title === "string" ? args.title : undefined,
+        priceNaira: typeof args.priceNaira === "number" ? args.priceNaira : undefined,
+        ticketCap: typeof args.ticketCap === "number" ? args.ticketCap : undefined,
+        tiers:
+          typeof args.tierId === "string"
+            ? [
+                {
+                  id: args.tierId,
+                  priceNaira: typeof args.tierPriceNaira === "number" ? args.tierPriceNaira : undefined,
+                  cap: typeof args.tierCap === "number" ? args.tierCap : undefined,
+                  name: typeof args.tierName === "string" ? args.tierName : undefined,
+                },
+              ]
+            : undefined,
+      };
+      return applyFlowEdit(String(args.slug ?? ""), patch);
+    },
+  };
+
+  const tools: GatewayTool[] = [
+    createFlowTool,
+    editFlowTool,
+    ...monnifyGatewayTools.filter((t) => t.name === "initiate_refund"),
+  ];
 
   const trace = await runAgent(buildSystemPrompt(flows), message, tools, 6);
   const lastText = [...trace].reverse().find((step): step is Extract<TraceStep, { type: "text" }> => step.type === "text");

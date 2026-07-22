@@ -34,15 +34,17 @@ export default async function CheckoutPage({ params }: { params: Promise<{ slug:
     ? (await getSubscriptionsForFlow(slug)).filter((s) => s.status === "active").length
     : 0;
 
-  const qrPayload =
-    record.checkoutUrl ??
-    (record.accountNumber ? `${record.bankName ?? "Bank transfer"}: ${record.accountNumber}` : slug);
-  const qrDataUrl = hasTiers
-    ? null
-    : await QRCode.toDataURL(qrPayload, {
-        margin: 1,
-        color: { dark: "#0b0b0c", light: "#ffffff" },
-      });
+  // Always the stable Wire checkout URL (matching app/api/flow/[slug]/qr,
+  // used for the WhatsApp-sent QR) rather than record.checkoutUrl directly —
+  // that Monnify link is a fixed-price invoice that can be regenerated on a
+  // price edit (see lib/flow/edit.ts), while this page's own URL never
+  // changes. Also means tiered events get a QR at all, which they didn't
+  // before (there's no single price/link to encode for those).
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const qrDataUrl = await QRCode.toDataURL(`${appUrl}/checkout/${slug}`, {
+    margin: 1,
+    color: { dark: "#0b0b0c", light: "#ffffff" },
+  });
 
   return (
     <div className="relative flex flex-1 flex-col">
@@ -55,11 +57,18 @@ export default async function CheckoutPage({ params }: { params: Promise<{ slug:
             <h1 className="font-heading mt-3 text-balance text-[28px] font-medium leading-snug tracking-tight text-ink">
               {record.title}
             </h1>
+
+            <div className="mt-6 flex flex-col items-center gap-4 rounded-xl border border-line bg-white p-6">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={qrDataUrl} alt="Checkout QR code" className="h-44 w-44" />
+              <p className="text-center text-[13px] text-muted">Scan to open this payment page</p>
+            </div>
+
             {hasTiers ? (
               <TierPicker slug={record.slug} tiers={record.tiers!} />
             ) : (
               <>
-                <p className="mt-2 font-heading tabular-nums text-3xl font-medium text-ink">
+                <p className="mt-6 font-heading tabular-nums text-3xl font-medium text-ink">
                   {formatNaira(record.priceNaira)}
                   {record.recurring && (
                     <span className="text-[16px] font-medium text-muted"> / {record.recurring.frequency}</span>
@@ -71,14 +80,6 @@ export default async function CheckoutPage({ params }: { params: Promise<{ slug:
                     after that.
                   </p>
                 )}
-
-                <div className="mt-8 flex flex-col items-center gap-4 rounded-xl border border-line bg-white p-6">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={qrDataUrl ?? undefined} alt="Checkout QR code" className="h-44 w-44" />
-                  <p className="text-center text-[13px] text-muted">
-                    Scan to open the payment link{record.checkoutUrl ? "" : " — or use the transfer details below"}
-                  </p>
-                </div>
 
                 {record.accountNumber && (
                   <div className="mt-4 flex items-center justify-between rounded-lg border border-line bg-white px-4 py-3">
